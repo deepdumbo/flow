@@ -1,131 +1,223 @@
 """U-Net model class."""
 
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
-###############################################################
-# Create a tensor and set ``requires_grad=True`` to track computation with it
-x = torch.ones(2, 2, requires_grad=True)
-x = torch.tensor([[2., 2.], [2., 2.]], requires_grad=True)
-print(x)
 
-###############################################################
-# Do a tensor operation:
-y = x + 2
-print(y)
+class UNet(nn.Module):
+    def __init__(self):
+        super(UNet, self).__init__()
+        # 1 input image channel, 6 output channels, 5x5 square convolution
+        # kernel
+        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        # an affine operation: y = Wx + b
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
-###############################################################
-# ``y`` was created as a result of an operation, so it has a ``grad_fn``.
-print(y.grad_fn)
+    def forward(self, x):
+        # Max pooling over a (2, 2) window
+        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
+        # If the size is a square you can only specify a single number
+        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
+        x = x.view(-1, self.num_flat_features(x))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
 
-###############################################################
-# Do more operations on ``y``
-z = y * y * 3
-out = z.mean()
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
 
-print(z, out)
 
-###############################################################
-# Gradients
-# ---------
-# Let's backprop now.
-# Because ``out`` contains a single scalar, ``out.backward()`` is
-# equivalent to ``out.backward(torch.tensor(1.))``.
+net = UNet()
+print(net)
 
-out.backward(torch.tensor(2.))
-out.backward()
-
-###############################################################
-# Print gradients d(out)/dx
+########################################################################
+# You just have to define the ``forward`` function, and the ``backward``
+# function (where gradients are computed) is automatically defined for you
+# using ``autograd``.
+# You can use any of the Tensor operations in the ``forward`` function.
 #
+# The learnable parameters of a model are returned by ``net.parameters()``
 
-print(x.grad)
+params = list(net.parameters())
+print(len(params))
+print(params[0].size())  # conv1's .weight
 
-###############################################################
-# You should have got a matrix of ``4.5``. Let’s call the ``out``
-# *Tensor* “:math:`o`”.
-# We have that :math:`o = \frac{1}{4}\sum_i z_i`,
-# :math:`z_i = 3(x_i+2)^2` and :math:`z_i\bigr\rvert_{x_i=1} = 27`.
-# Therefore,
-# :math:`\frac{\partial o}{\partial x_i} = \frac{3}{2}(x_i+2)`, hence
-# :math:`\frac{\partial o}{\partial x_i}\bigr\rvert_{x_i=1} = \frac{9}{2} = 4.5`.
+########################################################################
+# Let try a random 32x32 input.
+# Note: expected input size of this net (LeNet) is 32x32. To use this net on
+# MNIST dataset, please resize the images from the dataset to 32x32.
 
-###############################################################
-# Mathematically, if you have a vector valued function :math:`\vec{y}=f(\vec{x})`,
-# then the gradient of :math:`\vec{y}` with respect to :math:`\vec{x}`
-# is a Jacobian matrix:
+input = torch.randn(1, 1, 32, 32)
+out = net(input)
+print(out)
+
+########################################################################
+# Zero the gradient buffers of all parameters and backprops with random
+# gradients:
+net.zero_grad()
+out.backward(torch.randn(1, 10))
+
+########################################################################
+# .. note::
 #
-# .. math::
-#   J=\left(\begin{array}{ccc}
-#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
-#    \vdots & \ddots & \vdots\\
-#    \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
-#    \end{array}\right)
+#     ``torch.nn`` only supports mini-batches. The entire ``torch.nn``
+#     package only supports inputs that are a mini-batch of samples, and not
+#     a single sample.
 #
-# Generally speaking, ``torch.autograd`` is an engine for computing
-# vector-Jacobian product. That is, given any vector
-# :math:`v=\left(\begin{array}{cccc} v_{1} & v_{2} & \cdots & v_{m}\end{array}\right)^{T}`,
-# compute the product :math:`v^{T}\cdot J`. If :math:`v` happens to be
-# the gradient of a scalar function :math:`l=g\left(\vec{y}\right)`,
-# that is,
-# :math:`v=\left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} & \cdots & \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}`,
-# then by the chain rule, the vector-Jacobian product would be the
-# gradient of :math:`l` with respect to :math:`\vec{x}`:
+#     For example, ``nn.Conv2d`` will take in a 4D Tensor of
+#     ``nSamples x nChannels x Height x Width``.
 #
-# .. math::
-#   J^{T}\cdot v=\left(\begin{array}{ccc}
-#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
-#    \vdots & \ddots & \vdots\\
-#    \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
-#    \end{array}\right)\left(\begin{array}{c}
-#    \frac{\partial l}{\partial y_{1}}\\
-#    \vdots\\
-#    \frac{\partial l}{\partial y_{m}}
-#    \end{array}\right)=\left(\begin{array}{c}
-#    \frac{\partial l}{\partial x_{1}}\\
-#    \vdots\\
-#    \frac{\partial l}{\partial x_{n}}
-#    \end{array}\right)
+#     If you have a single sample, just use ``input.unsqueeze(0)`` to add
+#     a fake batch dimension.
 #
-# (Note that :math:`v^{T}\cdot J` gives a row vector which can be
-# treated as a column vector by taking :math:`J^{T}\cdot v`.)
+# Before proceeding further, let's recap all the classes you’ve seen so far.
 #
-# This characteristic of vector-Jacobian product makes it very
-# convenient to feed external gradients into a model that has
-# non-scalar output.
+# **Recap:**
+#   -  ``torch.Tensor`` - A *multi-dimensional array* with support for autograd
+#      operations like ``backward()``. Also *holds the gradient* w.r.t. the
+#      tensor.
+#   -  ``nn.Module`` - Neural network module. *Convenient way of
+#      encapsulating parameters*, with helpers for moving them to GPU,
+#      exporting, loading, etc.
+#   -  ``nn.Parameter`` - A kind of Tensor, that is *automatically
+#      registered as a parameter when assigned as an attribute to a*
+#      ``Module``.
+#   -  ``autograd.Function`` - Implements *forward and backward definitions
+#      of an autograd operation*. Every ``Tensor`` operation creates at
+#      least a single ``Function`` node that connects to functions that
+#      created a ``Tensor`` and *encodes its history*.
+#
+# **At this point, we covered:**
+#   -  Defining a neural network
+#   -  Processing inputs and calling backward
+#
+# **Still Left:**
+#   -  Computing the loss
+#   -  Updating the weights of the network
+#
+# Loss Function
+# -------------
+# A loss function takes the (output, target) pair of inputs, and computes a
+# value that estimates how far away the output is from the target.
+#
+# There are several different
+# `loss functions <https://pytorch.org/docs/nn.html#loss-functions>`_ under the
+# nn package .
+# A simple loss is: ``nn.MSELoss`` which computes the mean-squared error
+# between the input and the target.
+#
+# For example:
 
-###############################################################
-# Now let's take a look at an example of vector-Jacobian product:
+output = net(input)
+target = torch.randn(10)  # a dummy target, for example
+target = target.view(1, -1)  # make it the same shape as output
+criterion = nn.MSELoss()
 
-x = torch.randn(3, requires_grad=True)
+loss = criterion(output, target)
+print(loss)
 
-y = x * 2
-while y.data.norm() < 1000:
-    y = y * 2
+########################################################################
+# Now, if you follow ``loss`` in the backward direction, using its
+# ``.grad_fn`` attribute, you will see a graph of computations that looks
+# like this:
+#
+# ::
+#
+#     input -> conv2d -> relu -> maxpool2d -> conv2d -> relu -> maxpool2d
+#           -> view -> linear -> relu -> linear -> relu -> linear
+#           -> MSELoss
+#           -> loss
+#
+# So, when we call ``loss.backward()``, the whole graph is differentiated
+# w.r.t. the loss, and all Tensors in the graph that has ``requires_grad=True``
+# will have their ``.grad`` Tensor accumulated with the gradient.
+#
+# For illustration, let us follow a few steps backward:
 
-print(y)
+print(loss.grad_fn)  # MSELoss
+print(loss.grad_fn.next_functions[0][0])  # Linear
+print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 
-###############################################################
-# Now in this case ``y`` is no longer a scalar. ``torch.autograd``
-# could not compute the full Jacobian directly, but if we just
-# want the vector-Jacobian product, simply pass the vector to
-# ``backward`` as argument:
-v = torch.tensor([0.1, 1.0, 0.0001], dtype=torch.float)
-y.backward(v)
+########################################################################
+# Backprop
+# --------
+# To backpropagate the error all we have to do is to ``loss.backward()``.
+# You need to clear the existing gradients though, else gradients will be
+# accumulated to existing gradients.
+#
+#
+# Now we shall call ``loss.backward()``, and have a look at conv1's bias
+# gradients before and after the backward.
 
-print(x.grad)
 
-###############################################################
-# You can also stop autograd from tracking history on Tensors
-# with ``.requires_grad=True`` by wrapping the code block in
-# ``with torch.no_grad():``
-print(x.requires_grad)
-print((x ** 2).requires_grad)
+net.zero_grad()     # zeroes the gradient buffers of all parameters
 
-with torch.no_grad():
-	print((x ** 2).requires_grad)
+print('conv1.bias.grad before backward')
+print(net.conv1.bias.grad)
 
-###############################################################
+loss.backward()
+
+print('conv1.bias.grad after backward')
+print(net.conv1.bias.grad)
+
+########################################################################
+# Now, we have seen how to use loss functions.
+#
 # **Read Later:**
 #
-# Documentation of ``autograd`` and ``Function`` is at
-# https://pytorch.org/docs/autograd
+#   The neural network package contains various modules and loss functions
+#   that form the building blocks of deep neural networks. A full list with
+#   documentation is `here <https://pytorch.org/docs/nn>`_.
+#
+# **The only thing left to learn is:**
+#
+#   - Updating the weights of the network
+#
+# Update the weights
+# ------------------
+# The simplest update rule used in practice is the Stochastic Gradient
+# Descent (SGD):
+#
+#      ``weight = weight - learning_rate * gradient``
+#
+# We can implement this using simple python code:
+#
+# .. code:: python
+#
+#     learning_rate = 0.01
+#     for f in net.parameters():
+#         f.data.sub_(f.grad.data * learning_rate)
+#
+# However, as you use neural networks, you want to use various different
+# update rules such as SGD, Nesterov-SGD, Adam, RMSProp, etc.
+# To enable this, we built a small package: ``torch.optim`` that
+# implements all these methods. Using it is very simple:
+
+
+# create your optimizer
+optimizer = optim.SGD(net.parameters(), lr=0.01)
+
+# in your training loop:
+optimizer.zero_grad()   # zero the gradient buffers
+output = net(input)
+loss = criterion(output, target)
+loss.backward()
+optimizer.step()    # Does the update
+
+
+###############################################################
+# .. Note::
+#
+#       Observe how gradient buffers had to be manually set to zero using
+#       ``optimizer.zero_grad()``. This is because gradients are accumulated
+#       as explained in `Backprop`_ section.
