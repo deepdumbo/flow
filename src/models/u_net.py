@@ -3,43 +3,62 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.functional import relu, max_pool3d
+from torch.nn.modules.conv import Conv3d, ConvTranspose3d
 import torch.optim as optim
 
 
 class UNet(nn.Module):
     def __init__(self):
         super(UNet, self).__init__()
-        # 1 input image channel, 6 output channels, 5x5 square convolution
-        # kernel
-        self.conv1 = nn.Conv2d(1, 6, 5)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        # Define layers
+        self.conv1 = Conv3d(1, 64, (3, 3, 3), padding=(1, 1, 1))
+        self.conv2 = Conv3d(64, 64, (3, 3, 3), padding=(1, 1, 1))
+
+        self.conv3 = Conv3d(64, 128, (3, 3, 3), padding=(1, 1, 1))
+        self.conv4 = Conv3d(128, 128, (3, 3, 3), padding=(1, 1, 1))
+
+        self.conv5 = Conv3d(128, 256, (3, 3, 3), padding=(1, 1, 1))
+        self.conv6 = Conv3d(256, 256, (3, 3, 3), padding=(1, 1, 1))
+
+        self.up7 = ConvTranspose3d(256, 128, (2, 2, 2), stride=(2, 2, 2))
+        self.conv8 = Conv3d(256, 128, (3, 3, 3), padding=(1, 1, 1))
+        self.conv9 = Conv3d(128, 128, (3, 3, 3), padding=(1, 1, 1))
+
+        self.up10 = ConvTranspose3d(128, 64, (2, 2, 2), stride=(2, 2, 2))
+        self.conv11 = Conv3d(128, 64, (3, 3, 3), padding=(1, 1, 1))
+        self.conv12 = Conv3d(64, 64, (3, 3, 3), padding=(1, 1, 1))
+
+        self.conv13 = Conv3d(64, 1, (1, 1, 1))
 
     def forward(self, x):
-        # Max pooling over a (2, 2) window
-        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
-        # If the size is a square you can only specify a single number
-        x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-        x = x.view(-1, self.num_flat_features(x))
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = relu(self.conv1(x))
+        x1 = relu(self.conv2(x))
+        x = max_pool3d(x1, (2, 2, 2), stride=(2, 2, 2))
+
+        x = relu(self.conv3(x))
+        x2 = relu(self.conv4(x))
+        x = max_pool3d(x2, (2, 2, 2), stride=(2, 2, 2))
+
+        x = relu(self.conv5(x))
+        x = relu(self.conv6(x))
+
+        x = self.up7(x)
+        x = torch.cat((x, x2), dim=1)
+        x = relu(self.conv8(x))
+        x = relu(self.conv9(x))
+
+        x = self.up10(x)
+        x = torch.cat((x, x1), dim=1)
+        x = relu(self.conv11(x))
+        x = relu(self.conv12(x))
+
+        x = self.conv13(x)
+
+        x = torch.sigmoid(x)
         return x
 
-    def num_flat_features(self, x):
-        size = x.size()[1:]  # all dimensions except the batch dimension
-        num_features = 1
-        for s in size:
-            num_features *= s
-        return num_features
-
-
-net = UNet()
-print(net)
-
+"""
 ########################################################################
 # You just have to define the ``forward`` function, and the ``backward``
 # function (where gradients are computed) is automatically defined for you
@@ -221,3 +240,4 @@ optimizer.step()    # Does the update
 #       Observe how gradient buffers had to be manually set to zero using
 #       ``optimizer.zero_grad()``. This is because gradients are accumulated
 #       as explained in `Backprop`_ section.
+"""
