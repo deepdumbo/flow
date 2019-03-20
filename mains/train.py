@@ -1,4 +1,11 @@
-from src.models.u_net import UNet
+from flow.models.u_net import UNet
 
-net = UNet()
-print(net)
+
+def main():
+    net = UNet()
+    print(net)
+    return
+
+
+if __name__ == '__main__':
+    main()
