@@ -1,6 +1,7 @@
 """U-Net model class."""
 
 import torch
+import torch.nn as nn
 from torch.nn.functional import relu, max_pool3d
 from torch.nn.modules.conv import Conv3d, ConvTranspose3d
 
