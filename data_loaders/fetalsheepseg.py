@@ -1,4 +1,4 @@
-"""Defines the fetal sheep segmentation dataset class."""
+"""Defines the fetal sheep segmentation dataset class and transforms."""
 
 import os
 

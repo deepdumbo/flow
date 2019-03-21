@@ -1,5 +1,7 @@
 """Main function for training."""
 
+import argparse
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -56,4 +58,11 @@ def main():
 
 
 if __name__ == '__main__':
+    # Set up command line argument for the config file
+    default_config = '/home/chris/flow/configs/fetalsheepseg.json'
+    parser = argparse.ArgumentParser(description='Training.')
+    parser.add_argument('configfile', help='Config .json file.', nargs='?',
+                        default=default_config)
+    args = parser.parse_args()
+    print(args.configfile)
     main()
