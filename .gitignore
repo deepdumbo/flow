@@ -1,6 +1,6 @@
 __pycache__
-data/external
-data/interim
-data/processed
-data/raw
+data/*/external
+data/*/interim
+data/*/processed
+data/*/raw
 saved_models
