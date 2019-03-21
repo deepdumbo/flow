@@ -15,19 +15,25 @@ from flow.data_loaders.fetalsheepseg import FetalSheepSegDataset
 
 
 def main():
+    # Chooses device. Prefers GPU.
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    # Handle to dataset
     data_dir = '/home/chris/flow/data/FetalSheepSegmentation/processed'
     trainset = FetalSheepSegDataset(data_dir, train=True)
     validset = FetalSheepSegDataset(data_dir, train=False)
+    # Create iterable
     trainloader = DataLoader(trainset, batch_size=4, shuffle=True)
     validloader = DataLoader(validset, batch_size=4, shuffle=True)
 
+    # Load neural net
     net = UNet()
 
+    # Create loss function and optimizer
     loss_function = nn.MSELoss()
     optimizer = optim.SGD(net.parameters(), lr=0.01)
 
+    # Move parameters to chosen device
     net.to(device)
 
     max_epoch = 1
@@ -58,7 +64,8 @@ def main():
 
 
 if __name__ == '__main__':
-    # Set up command line argument for the config file
+    # Set up command line argument for the config file.
+    # Uses default config file if no command line argument is present.
     default_config = '/home/chris/flow/configs/fetalsheepseg.json'
     parser = argparse.ArgumentParser(description='Training.')
     parser.add_argument('configfile', help='Config .json file.', nargs='?',
