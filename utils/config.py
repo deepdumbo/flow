@@ -1,9 +1,8 @@
-"""Class that reads .json configuration file and sets attributes."""
 import json
 
 
 class _NestedObject:
-    """For nesting objects as attributes of Config class."""
+    """For nesting objects as attributes of Config."""
     def __init__(self, dictionary):
         for key, value in dictionary.items():
             if isinstance(value, dict):  # If nested dictionary
@@ -13,6 +12,7 @@ class _NestedObject:
 
 
 class Config(_NestedObject):
+    """Read .json configuration file and set attributes from dictionary."""
     def __init__(self, json_file):
         self.json_file = json_file
 
