@@ -10,11 +10,12 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from flow.utils.config import Config
 from flow.models.u_net import UNet
 from flow.data_loaders.fetalsheepseg import FetalSheepSegDataset
 
 
-def main():
+def main(config):
     # Chooses device. Prefers GPU.
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -72,4 +73,5 @@ if __name__ == '__main__':
                         default=default_config)
     args = parser.parse_args()
     print(args.configfile)
-    main()
+    config = Config(args.configfile)
+    main(config)
