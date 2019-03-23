@@ -60,6 +60,7 @@ def main(config):
     for epoch in range(max_epoch):
         log.info('\nEpoch {} out of {}.'.format(epoch + 1, max_epoch))
         start_time = time.time()
+
         for i, minibatch in enumerate(trainloader):
             inputs, truth = minibatch
             inputs, truth = inputs.to(device), truth.to(device)
@@ -74,6 +75,7 @@ def main(config):
             l = loss.item()
             log.info(f'....Batch {i+1}/{num_batches}. Training loss: {l:.6f}')
 
+        torch.save(net.state_dict(), )
         log.info('Epoch time: {:.4f} s'.format(time.time() - start_time))
 
     log_end()

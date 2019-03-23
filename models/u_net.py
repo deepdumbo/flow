@@ -1,12 +1,13 @@
 """U-Net model class."""
 
 import torch
-import torch.nn as nn
 from torch.nn.functional import relu, max_pool3d
 from torch.nn.modules.conv import Conv3d, ConvTranspose3d
 
+from flow.base.model import BaseModel
 
-class UNet(nn.Module):
+
+class UNet(BaseModel):
     def __init__(self):
         super(UNet, self).__init__()
         # Define layers
