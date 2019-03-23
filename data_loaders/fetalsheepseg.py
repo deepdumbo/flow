@@ -40,7 +40,7 @@ class FetalSheepSegDataset(Dataset):
         data = sio.loadmat(self.files[idx])
         image = np.expand_dims(data['outOrig'], 0)  # Add channel axis
         mask = np.expand_dims(data['outMask'], 0)
-        sample = [image, mask]
+        sample = [image.astype(np.float32), mask.astype(np.float32)]
 
         if self.transform:
             sample = self.transform(sample)
