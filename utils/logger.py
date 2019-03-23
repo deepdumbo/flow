@@ -44,7 +44,7 @@ def log_start(config):
     logging.info(f'Optimizer: {config.optimizer.name}')
     logging.info(f'Learning rate: {config.optimizer.learning_rate}')
     logging.info(f'Loss function: {config.loss_function}')
-    logging.info(f'# Epochs to train to: {config.trainer.epochs}')
+    logging.info(f'Num epochs to train to: {config.trainer.epochs}')
 
 
 def log_end():
