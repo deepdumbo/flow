@@ -1,8 +1,10 @@
 {
     "experiment_name": "seg_fetal_sheep",
-    "model_path": "C:/Users/Chris/flow/saved_models/seg_fetal_sheep/unet.pth",
+    "model_path": "C:/Users/Chris/flow/mains/seg_fetal_sheep/saved_models/unet.pth",
+    "history_filename": "C:/Users/Chris/flow/mains/seg_fetal_sheep/history.pickle",
+    "validation_period": 1,
     "num_gpu": 1,
-    "log_level": "DEBUG",
+    "log_level": "INFO",
     "data_loader": {
         "name": "FetalSheepSegDataset",
         "data_dir": "C:/Users/Chris/flow/data/FetalSheepSegmentation/processed",
@@ -19,7 +21,7 @@
     },
     "loss_function": "MSELoss",
     "trainer": {
-        "max_epoch": 4,
+        "max_epoch": 2,
         "save_period": 1,
         "monitor": "min val_loss"
     }

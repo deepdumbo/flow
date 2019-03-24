@@ -11,7 +11,6 @@ class BaseModel(nn.Module):
         super(BaseModel, self).__init__()
         self.epoch = 0  # Number of epochs completed
         self.global_step = 0
-        self.loss = []
 
     def save(self, model_path, optimizer):
         # Append epoch to save name
@@ -21,8 +20,7 @@ class BaseModel(nn.Module):
         torch.save({'model_state_dict': self.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'epoch': self.epoch,
-                    'global_step': self.global_step,
-                    'loss': self.loss},
+                    'global_step': self.global_step},
                    savename)
         logging.info(f'Model saved: {savename}')
 
@@ -39,7 +37,6 @@ class BaseModel(nn.Module):
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.epoch = checkpoint['epoch']
         self.global_step = checkpoint['global_step']
-        self.loss = checkpoint['loss']
         logging.info(f'Model loaded: {savename}')
 
     def print_state_dict(self):
