@@ -1,5 +1,3 @@
-"""U-Net model class."""
-
 import torch
 from torch.nn.functional import relu, max_pool3d
 from torch.nn.modules.conv import Conv3d, ConvTranspose3d
@@ -7,9 +5,9 @@ from torch.nn.modules.conv import Conv3d, ConvTranspose3d
 from flow.base.model import BaseModel
 
 
-class UNet(BaseModel):
+class UNet3D(BaseModel):
     def __init__(self):
-        super(UNet, self).__init__()
+        super(UNet3D, self).__init__()
         # Define layers
         self.conv1 = Conv3d(1, 64, (3, 3, 3), padding=(1, 1, 1))
         self.conv2 = Conv3d(64, 64, (3, 3, 3), padding=(1, 1, 1))

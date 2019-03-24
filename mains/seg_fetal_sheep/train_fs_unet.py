@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 
 from flow.utils.config import Config
 from flow.utils.logger import config_logger, log_start, log_end
-from flow.models.u_net import UNet
+from flow.models.u_net import UNet3D
 from flow.data_loaders.fetalsheepseg import FetalSheepSegDataset
 
 
@@ -22,7 +22,6 @@ def main(config):
     log = logging.getLogger()
     log_start(config)
 
-    log.info('\n---------- TRAINING ----------')
     # Chooses device. Prefers GPU.
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -40,7 +39,7 @@ def main(config):
                              num_workers=config.data_loader.num_workers)
 
     # Load neural net
-    model = UNet()
+    model = UNet3D()
 
     # Move parameters to chosen device
     model.to(device)
@@ -52,10 +51,12 @@ def main(config):
     # Load model
     model.load(config.model_path, optimizer, device=device)
 
-    max_epoch = config.trainer.epochs
+    max_epoch = config.trainer.max_epoch
 
-    log.info('Number of samples in training set: {}'.format(len(trainset)))
-    log.info('Batch size: {}'.format(config.data_loader.batch_size))
+    log.info('\n---------- TRAINING ----------')
+    log.info(f'Number of samples in training set: {len(trainset)}')
+    log.info(f'Number of samples in validation set: {len(validset)}')
+    log.info(f'Batch size: {config.data_loader.batch_size}')
     num_batches = int(np.ceil(len(trainset)/config.data_loader.batch_size))
 
     for epoch in range(model.epoch, max_epoch):
