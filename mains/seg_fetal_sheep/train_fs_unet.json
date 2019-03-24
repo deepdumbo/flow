@@ -1,5 +1,6 @@
 {
-    "experiment_name": "UNet3D_Seg",
+    "experiment_name": "seg_fetal_sheep",
+    "model_path": "C:/Users/Chris/flow/saved_models/seg_fetal_sheep/unet.pth",
     "num_gpu": 1,
     "log_level": "DEBUG",
     "data_loader": {
@@ -18,8 +19,7 @@
     },
     "loss_function": "MSELoss",
     "trainer": {
-        "epochs": 1,
-        "save_dir": "savepath",
+        "epochs": 2,
         "save_period": 1,
         "monitor": "min val_loss"
     }

@@ -2,7 +2,7 @@ import logging
 import datetime
 
 
-def config_logger(log_level, main_filename):
+def config_logger(main_filename, log_level='DEBUG'):
     """Configures the logger.
 
     Only call this once per run because can only configure once. Call this
@@ -32,7 +32,7 @@ def log_start(config):
     logging.info('')
     logging.info('')
     logging.info('')
-    logging.info('---------- Start ----------')
+    logging.info('---------- START ----------')
     logging.info(f'Date Time: {datetime.datetime.now()}')
     logging.info(f'Using config file: {config.json_file}')
     logging.info(f'Experiment name: {config.experiment_name}')
@@ -49,5 +49,5 @@ def log_start(config):
 
 def log_end():
     logging.info('')
-    logging.info('---------- End ----------')
+    logging.info('---------- END ----------')
     logging.info(f'Date Time: {datetime.datetime.now()}')

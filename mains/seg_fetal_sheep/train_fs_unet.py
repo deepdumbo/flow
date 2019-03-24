@@ -22,10 +22,10 @@ def main(config):
     log = logging.getLogger()
     log_start(config)
 
+    log.info('\n---------- TRAINING ----------')
     # Chooses device. Prefers GPU.
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    # Handle to dataset
     data_dir = config.data_loader.data_dir
     trainset = FetalSheepSegDataset(data_dir, train=True)
     validset = FetalSheepSegDataset(data_dir, train=False)
@@ -40,24 +40,25 @@ def main(config):
                              num_workers=config.data_loader.num_workers)
 
     # Load neural net
-    net = UNet()
+    model = UNet()
 
     # Move parameters to chosen device
-    net.to(device)
+    model.to(device)
 
     # Create loss function and optimizer
     loss_function = nn.MSELoss()
-    # optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
-    optimizer = optim.Adam(net.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+
+    # Load model
+    model.load(config.model_path, optimizer, device=device)
 
     max_epoch = config.trainer.epochs
 
-    log.info('\n---------- Training ----------')
     log.info('Number of samples in training set: {}'.format(len(trainset)))
     log.info('Batch size: {}'.format(config.data_loader.batch_size))
     num_batches = int(np.ceil(len(trainset)/config.data_loader.batch_size))
 
-    for epoch in range(max_epoch):
+    for epoch in range(model.epoch, max_epoch):
         log.info('\nEpoch {} out of {}.'.format(epoch + 1, max_epoch))
         start_time = time.time()
 
@@ -66,16 +67,20 @@ def main(config):
             inputs, truth = inputs.to(device), truth.to(device)
 
             optimizer.zero_grad()
-            outputs = net(inputs)
+            outputs = model(inputs)
             loss = loss_function(outputs, truth)
 
             loss.backward()  # Evaluate gradients
 
             optimizer.step()  # Update network parameters
             l = loss.item()
+            model.loss.append(l)
+
+            model.global_step = model.global_step + 1
             log.info(f'....Batch {i+1}/{num_batches}. Training loss: {l:.6f}')
 
-        torch.save(net.state_dict(), )
+        model.epoch = model.epoch + 1
+        model.save(config.model_path, optimizer)
         log.info('Epoch time: {:.4f} s'.format(time.time() - start_time))
 
     log_end()
@@ -95,6 +100,6 @@ if __name__ == '__main__':
     config = Config(args.configfile)
 
     # Set options for logging
-    config_logger(config.log_level, __file__)
+    config_logger(__file__, config.log_level)
 
     main(config)
