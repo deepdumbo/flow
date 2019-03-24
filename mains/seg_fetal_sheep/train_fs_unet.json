@@ -21,7 +21,7 @@
     },
     "loss_function": "MSELoss",
     "trainer": {
-        "max_epoch": 2,
+        "max_epoch": 4,
         "save_period": 1,
         "monitor": "min val_loss"
     }
