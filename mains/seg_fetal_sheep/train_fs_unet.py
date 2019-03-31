@@ -122,7 +122,7 @@ def main(config):
             log.info(f'....Batch {i+1}/{num_batches}. Training loss: {l:.6f}')
 
         model.epoch = model.epoch + 1
-        model.save(config.model_path, optimizer, max_to_keep=2)
+        model.save(config.model_path, optimizer, max_to_keep=1)
         with open(config.history_filename, 'wb') as h:
             pickle.dump(hist, h, protocol=pickle.HIGHEST_PROTOCOL)
 

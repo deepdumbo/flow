@@ -29,3 +29,7 @@ class Config(_NestedObject):
         if not os.path.isdir(self.results_dir):
             os.makedirs(self.results_dir)
         self.history_filename = f'{self.results_dir}/history.pickle'
+        self.save_dir = f'{self.experiment_dir}/saved_models'
+        if not os.path.isdir(self.save_dir):
+            os.makedirs(self.save_dir)
+        self.model_path = f'{self.save_dir}/{self.model_name}'

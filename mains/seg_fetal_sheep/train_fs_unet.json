@@ -1,5 +1,5 @@
 {
-    "model_path": "C:/Users/Chris/flow/mains/seg_fetal_sheep/saved_models/unet.pth",
+    "model_name": "unet.pth",
     "validation_period": 1,
     "num_gpu": 1,
     "log_level": "INFO",
