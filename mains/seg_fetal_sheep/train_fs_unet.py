@@ -127,7 +127,6 @@ def main(config):
             pickle.dump(hist, h, protocol=pickle.HIGHEST_PROTOCOL)
 
         log.info('Epoch time: {:.4f} s'.format(time.time() - start_time))
-
     return
 
 
@@ -140,7 +139,7 @@ if __name__ == '__main__':
                         action='store_true')
     args = parser.parse_args()
 
-    # Read configuration file and return object
+    # Read configuration file, set up directories and return object
     config = Config(args.configfile)
 
     # Set options for logging
