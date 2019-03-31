@@ -1,13 +1,15 @@
+import os
 import logging
 import datetime
+import __main__
 
 
-def config_logger(main_filename, log_level='DEBUG'):
+def configure_logger(log_to_screen=False, log_level='INFO'):
     """Configures the logger.
 
     Only call this once per run because can only configure once. Call this
-    before making any LogRecords. Saves log file as same base name as the main
-    script.
+    before making any LogRecords. Saves log file with same base name as the
+    main script.
 
     Note: There are 5 levels of severity (in increasing order),
         DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -18,7 +20,12 @@ def config_logger(main_filename, log_level='DEBUG'):
                     'ERROR': logging.ERROR,
                     'CRITICAL': logging.CRITICAL}
 
-    log_file = main_filename.split('.')[0] + '.log'  # Name of log file
+    if log_to_screen:
+        # Prints to screen
+        log_file = None
+    else:
+        # Log file same base name as the main file
+        log_file = os.path.splitext(__main__.__file__)[0] + '.log'
 
     # Set options for logging
     logging.basicConfig(level=logleveldict[log_level],
@@ -34,8 +41,9 @@ def log_start(config):
     logging.info('')
     logging.info('---------- START ----------')
     logging.info(f'Date Time: {datetime.datetime.now()}')
+    logging.info('')
     logging.info(f'Using config file: {config.json_file}')
-    logging.info(f'Experiment name: {config.experiment_name}')
+    logging.info(f'Experiment directory: {config.experiment_dir}')
     logging.info(f'Dataset: {config.data_loader.name}')
     logging.info(f'Reading data from: {config.data_loader.data_dir}')
     logging.info(f'Batch size: {config.data_loader.batch_size}')

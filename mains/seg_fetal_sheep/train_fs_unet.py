@@ -15,13 +15,13 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from flow.utils.config import Config
-from flow.utils.logger import config_logger, log_start, log_end
+from flow.utils.logger import configure_logger, log_start, log_end
 from flow.models.u_net import UNet3D
 from flow.data_loaders.fetalsheepseg import FetalSheepSegDataset
 from flow.utils.metrics import dice_coef
 
 
-def plot_history(hist):
+def plot_history(hist, config):
     f = plt.figure(figsize=(14, 6))
     ax = f.subplots(1, 2)
     ax[0].plot(range(len(hist['train_loss'])), hist['train_loss'])
@@ -32,7 +32,7 @@ def plot_history(hist):
     ax[1].set_xlabel('Epoch')
     ax[1].set_ylabel('Dice Coefficient (Validation Data)')
     ax[1].grid(which='both', alpha=0.25)
-    f.savefig('train_history.png', dpi=200)
+    f.savefig(f'{config.results_dir}/train_history.png', dpi=200)
     ax[0].clear()
     ax[1].clear()
     f.clear()
@@ -42,7 +42,6 @@ def plot_history(hist):
 
 def main(config):
     log = logging.getLogger()
-    log_start(config)
 
     # Chooses device. Prefers GPU.
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -103,7 +102,7 @@ def main(config):
                     outputs = model(inputs)
                     hist['valid_loss'].append(loss_function(outputs, truth))
                     hist['metric'].append(dice_coef(outputs, truth))
-                plot_history(hist)
+                plot_history(hist, config)
 
         for i, minibatch in enumerate(trainloader):
             inputs, truth = minibatch
@@ -123,29 +122,30 @@ def main(config):
             log.info(f'....Batch {i+1}/{num_batches}. Training loss: {l:.6f}')
 
         model.epoch = model.epoch + 1
-        model.save(config.model_path, optimizer)
+        model.save(config.model_path, optimizer, max_to_keep=2)
         with open(config.history_filename, 'wb') as h:
             pickle.dump(hist, h, protocol=pickle.HIGHEST_PROTOCOL)
 
         log.info('Epoch time: {:.4f} s'.format(time.time() - start_time))
 
-    log_end()
     return
 
 
 if __name__ == '__main__':
-    # Set up command line argument for specifying config file.
-    # Uses default config file if no command line argument is present.
+    # Command line arguments for config file and log location
     parser = argparse.ArgumentParser()
-    default_config = __file__.split('.')[0] + '.json'
-    parser.add_argument('configfile', help='Config .json file.', nargs='?',
-                        default=default_config)
+    parser.add_argument('configfile', help='Uses json file.', nargs='?',
+                        default=f'{os.path.splitext(__file__)[0]}.json')
+    parser.add_argument('-s', '--screen', help='Log to screen instead.',
+                        action='store_true')
     args = parser.parse_args()
 
     # Read configuration file and return object
     config = Config(args.configfile)
 
     # Set options for logging
-    config_logger(__file__, config.log_level)
+    configure_logger(args.screen, config.log_level)
 
+    log_start(config)
     main(config)
+    log_end()

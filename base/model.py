@@ -1,4 +1,5 @@
 import os
+import math
 import logging
 
 import torch
@@ -12,18 +13,10 @@ class BaseModel(nn.Module):
         self.epoch = 0  # Number of epochs completed
         self.global_step = 0
 
-    def save(self, model_path, optimizer, max_to_keep=5):
-        save_dir = '/'.join(model_path.split('/')[:-1])
-        files = sorted(os.listdir(save_dir))
-        if len(files) > (max_to_keep - 1):
-            num_files_to_del = len(files) - max_to_keep
-            files_to_del = files[0:num_files_to_del]
-            for file in files_to_del:
-                os.remove(f'{save_dir}/{file}')
-
+    def save(self, model_path, optimizer, max_to_keep=math.inf):
         # Append epoch to save name
-        filename_parts = model_path.split('.')
-        savename = f'{filename_parts[0]}_{self.epoch:05d}.{filename_parts[1]}'
+        filename_parts = os.path.splitext(model_path)
+        savename = f'{filename_parts[0]}_{self.epoch:05d}{filename_parts[1]}'
         # Save
         torch.save({'model_state_dict': self.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
@@ -31,9 +24,17 @@ class BaseModel(nn.Module):
                     'global_step': self.global_step},
                    savename)
         logging.info(f'Model saved: {savename}')
+        # Delete if too many files
+        save_dir = os.path.dirname(model_path)
+        files = sorted(os.listdir(save_dir))
+        if len(files) > (max_to_keep):
+            num_files_to_del = len(files) - max_to_keep
+            files_to_del = files[0:num_files_to_del]
+            for file in files_to_del:
+                os.remove(f'{save_dir}/{file}')
 
     def load(self, model_path, optimizer, device):
-        save_dir = '/'.join(model_path.split('/')[:-1])
+        save_dir = os.path.dirname(model_path)
         files = sorted(os.listdir(save_dir))
         if not files:  # If empty do not load anything
             return
