@@ -24,7 +24,7 @@ class Config(_NestedObject):
         super().__init__(config_dict)
 
         # Set directories according to directory of execution
-        self.experiment_dir = sys.path[0]
+        self.experiment_dir = sys.path[0].replace('\\', '/')
         self.results_dir = f'{self.experiment_dir}/results'
         if not os.path.isdir(self.results_dir):
             os.makedirs(self.results_dir)

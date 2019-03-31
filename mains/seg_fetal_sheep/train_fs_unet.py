@@ -40,9 +40,69 @@ def plot_history(hist, config):
     return
 
 
-def main(config):
-    log = logging.getLogger()
+def validate(model, config, loss_function, hist, validloader, device):
+    if model.epoch % config.validation_period == 0:
+        logging.info('..Running validation.')
+        with torch.no_grad():
+            for step, minibatch in enumerate(validloader):
+                inputs, truth = minibatch
+                inputs, truth = inputs.to(device), truth.to(device)
+                outputs = model(inputs)
+                hist['valid_loss'].append(loss_function(outputs, truth))
+                hist['metric'].append(dice_coef(outputs, truth))
+        plot_history(hist, config)
 
+
+def run_step(minibatch, model, loss_function, optimizer, hist, device,
+             num_batches, step):
+    inputs, truth = minibatch
+    inputs, truth = inputs.to(device), truth.to(device)
+
+    optimizer.zero_grad()
+    outputs = model(inputs)
+    loss = loss_function(outputs, truth)
+
+    loss.backward()  # Evaluate gradients
+
+    optimizer.step()  # Update network parameters
+    l = loss.item()
+    hist['train_loss'].append(l)
+
+    model.global_step = model.global_step + 1
+    logging.info(f'....Batch {step+1}/{num_batches}. Training loss: {l:.6f}')
+
+
+def run_epoch(model, config, loss_function, optimizer, hist, trainloader,
+              validloader, device, num_batches):
+    validate(model, config, loss_function, hist, validloader, device)
+
+    for step, minibatch in enumerate(trainloader):
+        run_step(minibatch, model, loss_function, optimizer, hist, device,
+                 num_batches, step)
+
+    model.epoch = model.epoch + 1
+    model.save(config.model_path, optimizer, max_to_keep=1)
+    with open(config.history_filename, 'wb') as h:
+        pickle.dump(hist, h, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def train(model, config, loss_function, optimizer, hist, trainset, validset,
+          trainloader, validloader, device):
+    logging.info('\n---------- TRAINING ----------')
+    logging.info(f'Number of samples in training set: {len(trainset)}')
+    logging.info(f'Number of samples in validation set: {len(validset)}')
+    logging.info(f'Training batch size: {config.data_loader.batch_size}')
+    num_batches = int(np.ceil(len(trainset)/config.data_loader.batch_size))
+    max_epoch = config.trainer.max_epoch
+    for epoch in range(model.epoch, max_epoch):
+        logging.info('\nEpoch {} out of {}.'.format(epoch + 1, max_epoch))
+        start_time = time.time()
+        run_epoch(model, config, loss_function, optimizer, hist, trainloader,
+                  validloader, device, num_batches)
+        logging.info('Epoch time: {:.4f} s'.format(time.time() - start_time))
+
+
+def main(config):
     # Chooses device. Prefers GPU.
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -81,53 +141,8 @@ def main(config):
                 'valid_loss': [],
                 'metric': []}
 
-    log.info('\n---------- TRAINING ----------')
-    log.info(f'Number of samples in training set: {len(trainset)}')
-    log.info(f'Number of samples in validation set: {len(validset)}')
-    log.info(f'Training batch size: {config.data_loader.batch_size}')
-    num_batches = int(np.ceil(len(trainset)/config.data_loader.batch_size))
-    max_epoch = config.trainer.max_epoch
-
-    for epoch in range(model.epoch, max_epoch):
-        log.info('\nEpoch {} out of {}.'.format(epoch + 1, max_epoch))
-        start_time = time.time()
-
-        # Validation
-        if epoch % config.validation_period == 0:
-            log.info('..Running validation.')
-            with torch.no_grad():
-                for i, minibatch in enumerate(validloader):
-                    inputs, truth = minibatch
-                    inputs, truth = inputs.to(device), truth.to(device)
-                    outputs = model(inputs)
-                    hist['valid_loss'].append(loss_function(outputs, truth))
-                    hist['metric'].append(dice_coef(outputs, truth))
-                plot_history(hist, config)
-
-        for i, minibatch in enumerate(trainloader):
-            inputs, truth = minibatch
-            inputs, truth = inputs.to(device), truth.to(device)
-
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = loss_function(outputs, truth)
-
-            loss.backward()  # Evaluate gradients
-
-            optimizer.step()  # Update network parameters
-            l = loss.item()
-            hist['train_loss'].append(l)
-
-            model.global_step = model.global_step + 1
-            log.info(f'....Batch {i+1}/{num_batches}. Training loss: {l:.6f}')
-
-        model.epoch = model.epoch + 1
-        model.save(config.model_path, optimizer, max_to_keep=1)
-        with open(config.history_filename, 'wb') as h:
-            pickle.dump(hist, h, protocol=pickle.HIGHEST_PROTOCOL)
-
-        log.info('Epoch time: {:.4f} s'.format(time.time() - start_time))
-    return
+    train(model, config, loss_function, optimizer, hist, trainset, validset,
+          trainloader, validloader, device)
 
 
 if __name__ == '__main__':
