@@ -1,9 +1,7 @@
 """Main function for training."""
 
 import os
-import time
 import argparse
-import logging
 import pickle
 
 import numpy as np

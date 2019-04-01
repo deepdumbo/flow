@@ -1,4 +1,3 @@
-import os
 import logging
 import time
 from functools import wraps
@@ -6,7 +5,6 @@ from functools import wraps
 import numpy as np
 
 import torch
-import torch.nn as nn
 
 
 def log_train(func):
