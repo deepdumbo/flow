@@ -3,6 +3,8 @@ import logging
 import time
 from functools import wraps
 
+import numpy as np
+
 import torch
 import torch.nn as nn
 
@@ -17,32 +19,37 @@ def timer(func):
 
 
 class BaseTrainer:
-    """"""
-    def __init__(self, epoch):
-        self.epoch = epoch
+    def __init__(self, model, config, loss_function, optimizer, hist, trainset,
+                 validset, trainloader, validloader, device):
+        self.model = model
+        self.config = config
+        self.loss_function = loss_function
+        self.optimizer = optimizer
+        self.hist = hist
+        self.trainset = trainset
+        self.validset = validset
+        self.trainloader = trainloader
+        self.validloader = validloader
+        self.device = device
+        self.num_train = len(trainset)
+        self.num_valid = len(validset)
+        self.batch_size = self.config.data_loader.batch_size
+        self.num_batches = int(np.ceil(self.num_train/self.batch_size))
+        self.max_epoch = self.config.trainer.max_epoch
 
     def train(self):
-        self.run_epoch()
+        for self.epoch in range(self.model.epoch, self.max_epoch):
+            self.run_epoch()
 
-    @timer
     def run_epoch(self):
-        self.run_step()
+        if self.epoch % self.config.validation_period == 0:
+            self.validate()
+
+        for self.step, self.minibatch in enumerate(self.trainloader):
+            self.run_step()
 
     def run_step(self):
-        print('This needs to be overrided.')
+        raise NotImplementedError
 
-
-class Trainer(BaseTrainer):
-    def __init__(self, epoch):
-        super(Trainer, self).__init__(epoch)
-
-    @timer
-    def run_epoch(self):
-        self.run_step()
-
-    def run_step(self):
-        print('Updating weights.')
-
-
-trainer = Trainer(5)
-trainer.run_epoch()
+    def validate(self):
+        raise NotImplementedError

@@ -18,6 +18,7 @@ from flow.utils.config import Config
 from flow.utils.logger import configure_logger, log_start, log_end
 from flow.models.u_net import UNet3D
 from flow.data_loaders.fetalsheepseg import FetalSheepSegDataset
+from flow.base.trainer import BaseTrainer
 from flow.utils.metrics import dice_coef
 
 
@@ -40,24 +41,12 @@ def plot_history(hist, config):
     return
 
 
-class Trainer:
+class Trainer(BaseTrainer):
     def __init__(self, model, config, loss_function, optimizer, hist, trainset,
                  validset, trainloader, validloader, device):
-        self.model = model
-        self.config = config
-        self.loss_function = loss_function
-        self.optimizer = optimizer
-        self.hist = hist
-        self.trainset = trainset
-        self.validset = validset
-        self.trainloader = trainloader
-        self.validloader = validloader
-        self.device = device
-        self.num_train = len(trainset)
-        self.num_valid = len(validset)
-        self.batch_size = self.config.data_loader.batch_size
-        self.num_batches = int(np.ceil(self.num_train/self.batch_size))
-        self.max_epoch = self.config.trainer.max_epoch
+        super(Trainer, self).__init__(model, config, loss_function, optimizer,
+                                      hist, trainset, validset, trainloader,
+                                      validloader, device)
 
     def train(self):
         logging.info('\n---------- TRAINING ----------')
@@ -71,7 +60,8 @@ class Trainer:
             logging.info(f'Epoch time: {time.time() - start_time:.4f} s')
 
     def run_epoch(self):
-        self.validate()
+        if self.epoch % self.config.validation_period == 0:
+            self.validate()
 
         for self.step, self.minibatch in enumerate(self.trainloader):
             self.run_step()
@@ -99,17 +89,16 @@ class Trainer:
         logging.info(f'....Batch {self.step+1}/{self.num_batches}. Training loss: {l:.6f}')
 
     def validate(self):
-        if self.epoch % self.config.validation_period == 0:
-            logging.info('..Running validation.')
-            with torch.no_grad():
-                for step, minibatch in enumerate(self.validloader):
-                    inputs, truth = minibatch
-                    inputs = inputs.to(self.device)
-                    truth = truth.to(self.device)
-                    outputs = self.model(inputs)
-                    self.hist['valid_loss'].append(self.loss_function(outputs, truth))
-                    self.hist['metric'].append(dice_coef(outputs, truth))
-            plot_history(self.hist, self.config)
+        logging.info('..Running validation.')
+        with torch.no_grad():
+            for step, minibatch in enumerate(self.validloader):
+                inputs, truth = minibatch
+                inputs = inputs.to(self.device)
+                truth = truth.to(self.device)
+                outputs = self.model(inputs)
+                self.hist['valid_loss'].append(self.loss_function(outputs, truth))
+                self.hist['metric'].append(dice_coef(outputs, truth))
+        plot_history(self.hist, self.config)
 
 
 def main(config):
