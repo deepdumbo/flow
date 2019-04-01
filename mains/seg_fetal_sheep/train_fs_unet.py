@@ -19,6 +19,7 @@ from flow.utils.logger import configure_logger, log_start, log_end
 from flow.models.u_net import UNet3D
 from flow.data_loaders.fetalsheepseg import FetalSheepSegDataset
 from flow.base.trainer import BaseTrainer
+from flow.base.trainer import log_train, log_epoch, log_step, log_validate
 from flow.utils.metrics import dice_coef
 
 
@@ -48,17 +49,12 @@ class Trainer(BaseTrainer):
                                       hist, trainset, validset, trainloader,
                                       validloader, device)
 
+    @log_train
     def train(self):
-        logging.info('\n---------- TRAINING ----------')
-        logging.info(f'Number of samples in training set: {self.num_train}')
-        logging.info(f'Number of samples in validation set: {self.num_valid}')
-        logging.info(f'Training batch size: {self.batch_size}')
         for self.epoch in range(self.model.epoch, self.max_epoch):
-            logging.info(f'\nEpoch {self.epoch+1} out of {self.max_epoch}.')
-            start_time = time.time()
             self.run_epoch()
-            logging.info(f'Epoch time: {time.time() - start_time:.4f} s')
 
+    @log_epoch
     def run_epoch(self):
         if self.epoch % self.config.validation_period == 0:
             self.validate()
@@ -71,32 +67,29 @@ class Trainer(BaseTrainer):
         with open(self.config.history_filename, 'wb') as h:
             pickle.dump(self.hist, h, protocol=pickle.HIGHEST_PROTOCOL)
 
+    @log_step
     def run_step(self):
         inputs, truth = self.minibatch
         inputs, truth = inputs.to(self.device), truth.to(self.device)
-
         self.optimizer.zero_grad()
         outputs = self.model(inputs)
         loss = self.loss_function(outputs, truth)
-
         loss.backward()  # Evaluate gradients
-
         self.optimizer.step()  # Update network parameters
-        l = loss.item()
-        self.hist['train_loss'].append(l)
-
+        self.l = loss.item()
+        self.hist['train_loss'].append(self.l)
         self.model.global_step = self.model.global_step + 1
-        logging.info(f'....Batch {self.step+1}/{self.num_batches}. Training loss: {l:.6f}')
 
+    @log_validate
     def validate(self):
-        logging.info('..Running validation.')
         with torch.no_grad():
             for step, minibatch in enumerate(self.validloader):
                 inputs, truth = minibatch
                 inputs = inputs.to(self.device)
                 truth = truth.to(self.device)
                 outputs = self.model(inputs)
-                self.hist['valid_loss'].append(self.loss_function(outputs, truth))
+                loss = self.loss_function(outputs, truth)
+                self.hist['valid_loss'].append(loss.item())
                 self.hist['metric'].append(dice_coef(outputs, truth))
         plot_history(self.hist, self.config)
 
