@@ -40,66 +40,76 @@ def plot_history(hist, config):
     return
 
 
-def validate(model, config, loss_function, hist, validloader, device):
-    if model.epoch % config.validation_period == 0:
-        logging.info('..Running validation.')
-        with torch.no_grad():
-            for step, minibatch in enumerate(validloader):
-                inputs, truth = minibatch
-                inputs, truth = inputs.to(device), truth.to(device)
-                outputs = model(inputs)
-                hist['valid_loss'].append(loss_function(outputs, truth))
-                hist['metric'].append(dice_coef(outputs, truth))
-        plot_history(hist, config)
+class Trainer:
+    def __init__(self, model, config, loss_function, optimizer, hist, trainset,
+                 validset, trainloader, validloader, device):
+        self.model = model
+        self.config = config
+        self.loss_function = loss_function
+        self.optimizer = optimizer
+        self.hist = hist
+        self.trainset = trainset
+        self.validset = validset
+        self.trainloader = trainloader
+        self.validloader = validloader
+        self.device = device
+        self.num_train = len(trainset)
+        self.num_valid = len(validset)
+        self.batch_size = self.config.data_loader.batch_size
+        self.num_batches = int(np.ceil(self.num_train/self.batch_size))
+        self.max_epoch = self.config.trainer.max_epoch
 
+    def train(self):
+        logging.info('\n---------- TRAINING ----------')
+        logging.info(f'Number of samples in training set: {self.num_train}')
+        logging.info(f'Number of samples in validation set: {self.num_valid}')
+        logging.info(f'Training batch size: {self.batch_size}')
+        for self.epoch in range(self.model.epoch, self.max_epoch):
+            logging.info(f'\nEpoch {self.epoch+1} out of {self.max_epoch}.')
+            start_time = time.time()
+            self.run_epoch()
+            logging.info(f'Epoch time: {time.time() - start_time:.4f} s')
 
-def run_step(minibatch, model, loss_function, optimizer, hist, device,
-             num_batches, step):
-    inputs, truth = minibatch
-    inputs, truth = inputs.to(device), truth.to(device)
+    def run_epoch(self):
+        self.validate()
 
-    optimizer.zero_grad()
-    outputs = model(inputs)
-    loss = loss_function(outputs, truth)
+        for self.step, self.minibatch in enumerate(self.trainloader):
+            self.run_step()
 
-    loss.backward()  # Evaluate gradients
+        self.model.epoch = self.model.epoch + 1
+        self.model.save(self.config.model_path, self.optimizer, max_to_keep=1)
+        with open(self.config.history_filename, 'wb') as h:
+            pickle.dump(self.hist, h, protocol=pickle.HIGHEST_PROTOCOL)
 
-    optimizer.step()  # Update network parameters
-    l = loss.item()
-    hist['train_loss'].append(l)
+    def run_step(self):
+        inputs, truth = self.minibatch
+        inputs, truth = inputs.to(self.device), truth.to(self.device)
 
-    model.global_step = model.global_step + 1
-    logging.info(f'....Batch {step+1}/{num_batches}. Training loss: {l:.6f}')
+        self.optimizer.zero_grad()
+        outputs = self.model(inputs)
+        loss = self.loss_function(outputs, truth)
 
+        loss.backward()  # Evaluate gradients
 
-def run_epoch(model, config, loss_function, optimizer, hist, trainloader,
-              validloader, device, num_batches):
-    validate(model, config, loss_function, hist, validloader, device)
+        self.optimizer.step()  # Update network parameters
+        l = loss.item()
+        self.hist['train_loss'].append(l)
 
-    for step, minibatch in enumerate(trainloader):
-        run_step(minibatch, model, loss_function, optimizer, hist, device,
-                 num_batches, step)
+        self.model.global_step = self.model.global_step + 1
+        logging.info(f'....Batch {self.step+1}/{self.num_batches}. Training loss: {l:.6f}')
 
-    model.epoch = model.epoch + 1
-    model.save(config.model_path, optimizer, max_to_keep=1)
-    with open(config.history_filename, 'wb') as h:
-        pickle.dump(hist, h, protocol=pickle.HIGHEST_PROTOCOL)
-
-
-def train(model, config, loss_function, optimizer, hist, trainset, validset,
-          trainloader, validloader, device):
-    logging.info('\n---------- TRAINING ----------')
-    logging.info(f'Number of samples in training set: {len(trainset)}')
-    logging.info(f'Number of samples in validation set: {len(validset)}')
-    logging.info(f'Training batch size: {config.data_loader.batch_size}')
-    num_batches = int(np.ceil(len(trainset)/config.data_loader.batch_size))
-    max_epoch = config.trainer.max_epoch
-    for epoch in range(model.epoch, max_epoch):
-        logging.info('\nEpoch {} out of {}.'.format(epoch + 1, max_epoch))
-        start_time = time.time()
-        run_epoch(model, config, loss_function, optimizer, hist, trainloader,
-                  validloader, device, num_batches)
-        logging.info('Epoch time: {:.4f} s'.format(time.time() - start_time))
+    def validate(self):
+        if self.epoch % self.config.validation_period == 0:
+            logging.info('..Running validation.')
+            with torch.no_grad():
+                for step, minibatch in enumerate(self.validloader):
+                    inputs, truth = minibatch
+                    inputs = inputs.to(self.device)
+                    truth = truth.to(self.device)
+                    outputs = self.model(inputs)
+                    self.hist['valid_loss'].append(self.loss_function(outputs, truth))
+                    self.hist['metric'].append(dice_coef(outputs, truth))
+            plot_history(self.hist, self.config)
 
 
 def main(config):
@@ -141,8 +151,9 @@ def main(config):
                 'valid_loss': [],
                 'metric': []}
 
-    train(model, config, loss_function, optimizer, hist, trainset, validset,
-          trainloader, validloader, device)
+    trainer = Trainer(model, config, loss_function, optimizer, hist, trainset,
+                      validset, trainloader, validloader, device)
+    trainer.train()
 
 
 if __name__ == '__main__':
