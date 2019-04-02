@@ -14,8 +14,8 @@ from torch.utils.data import DataLoader
 
 from flow.utils.config import Config
 from flow.utils.logger import configure_logger, log_start, log_end
-from flow.models.u_net import UNet3D
-from flow.data_loaders.fetalsheepseg import FetalSheepSegDataset
+from flow.models.unet import UNet3D
+from flow.data.fetalsheepseg import FetalSheepSegDataset
 from flow.base.trainer import BaseTrainer
 from flow.base.trainer import log_train, log_epoch, log_step, log_validate
 from flow.utils.metrics import dice_coef
