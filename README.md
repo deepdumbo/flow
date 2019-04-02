@@ -47,16 +47,18 @@ class UNet(BaseModel):
 │
 ├───mains                   # Create experiment folders in here
 │   └───experimentname
-│       ├───train.json      # json file same name as main file
-│       └───train.py
+│       ├───results
+│       ├───saved_models    # Trained models
+│       ├───train.json      # json file should be same name as main file
+│       └───train.py        # Main file for training
 │
 ├───models                  # Models that can be shared between experiments
 │   └───neuralnet.py
 │
-├───saved_models            # Pre-trained or trained models
+├───saved_models            # Trained models that can be used between experiments
 │   └───trained_model.pth
 │
 └───utils
-    ├───config.py           # Class to read json configurations file
+    ├───config.py           # Class to read json config file
     └───logger.py           # Python logging
 ```
