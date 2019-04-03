@@ -31,34 +31,48 @@ class UNet(BaseModel):
 
 # Folder Structure
 
+**Only the flow folder is tracked by git.**
+The flow folder should contain codes and only codes.
+
 ```
+flow                        # All codes and only codes here
+│
 ├───base
 │   ├───model.py            # Base class of the model
 │   └───trainer.py          # Base class of the trainer
 │
-├───data                    # Data that can be shared between experiments
-│   ├───DatasetName
-│   │   ├───external        # Data from third party sources
-│   │   ├───interim         # Convenient form of the raw data
-│   │   ├───processed       # Data ready for training
-│   │   └───raw             # Original data
-│   │
-│   └───datasetname.py      # Class to read data
+├───data                    # No actual data, just codes
+│   └───datasetname
+│       ├───process.py      # Process data
+│       └───dataset.py      # Class to read data
 │
 ├───mains                   # Create experiment folders in here
 │   └───experimentname
-│       ├───results
-│       ├───saved_models    # Trained models
 │       ├───train.json      # json file should be same name as main file
 │       └───train.py        # Main file for training
 │
-├───models                  # Models that can be shared between experiments
+├───models
 │   └───neuralnet.py
 │
-├───saved_models            # Trained models that can be used between experiments
-│   └───trained_model.pth
+├───utils
+│   ├───config.py           # Class to read json config file
+│   └───logger.py           # Python logging
 │
-└───utils
-    ├───config.py           # Class to read json config file
-    └───logger.py           # Python logging
+│
+data
+│
+├───datasetname
+│   ├───external            # Data from third party sources
+│   ├───interim             # Convenient intermediate form of the raw data
+│   ├───processed           # Data ready for training
+│   └───raw                 # Original data
+│
+├───experimentname          # Results and saved models separated from codes
+│   ├───results
+│   └───saved_models
+│
+│
+saved_models                # Trained models that can be shared between experiments
+│
+└───trained_model.pth
 ```
