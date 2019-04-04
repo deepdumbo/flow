@@ -25,6 +25,88 @@ maintime = tic;
 % Get a cell array of all subfolders
 folders = strsplit(genpath(datadir), ':');
 
+% Fields from dicom to keep. I've chosen fields that seem relevant and put
+% the more important ones for sorting at the beginning.
+fnames = {'StudyDate';
+          'SeriesTime';
+          'AcquisitionTime';
+          'ContentTime';
+          'SeriesNumber';
+          'AcquisitionNumber';
+          'InstanceNumber';
+          'SeriesDescription';
+          'TriggerTime';
+          'NominalInterval';
+          'CardiacNumberOfImages';
+          'Rows';
+          'Columns';
+          'PixelSpacing';
+          'ImagePositionPatient';
+          'ImageOrientationPatient';
+          'SliceLocation';
+          'SliceThickness';
+          'RepetitionTime';
+          'EchoTime';
+          'NumberOfAverages';
+          'ImagingFrequency';
+          'EchoNumber';
+          'MagneticFieldStrength';
+          'SpacingBetweenSlices';
+          'NumberOfPhaseEncodingSteps';
+          'EchoTrainLength';
+          'PercentSampling';
+          'PercentPhaseFieldOfView';
+          'PixelBandwidth';
+          'TransmitCoilName';
+          'AcquisitionMatrix';
+          'InPlanePhaseEncodingDirection';
+          'FlipAngle';
+          'PatientPosition';
+          'StudyID';
+          'PatientBirthDate';
+          'PatientSex';
+          'AccessionNumber';
+          'FileModDate';
+          'FileSize';
+          'Format';
+          'FormatVersion';
+          'Width';
+          'Height';
+          'BitDepth';
+          'ColorType';
+          'FileMetaInformationGroupLength';
+          'FileMetaInformationVersion';
+          'InstanceCreationDate';
+          'InstanceCreationTime';
+          'Modality';
+          'Manufacturer';
+          'ManufacturerModelName';
+          'BodyPartExamined';
+          'ScanningSequence';
+          'SequenceVariant';
+          'ScanOptions';
+          'MRAcquisitionType';
+          'SequenceName';
+          'AngioFlag';
+          'ImagedNucleus';
+          'SoftwareVersion';
+          'VariableFlipAngleFlag';
+          'SAR';
+          'dBdt';
+          'SamplesPerPixel';
+          'PhotometricInterpretation';
+          'BitsStored';
+          'HighBit';
+          'PixelRepresentation';
+          'SmallestImagePixelValue';
+          'LargestImagePixelValue';
+          'RequestingService';
+          'RequestedProcedureDescription';
+          'RescaleIntercept';
+          'RescaleSlope';
+          'RescaleType';
+          'Filename'};
+
 % Number ID for saving
 s = 1;
 
@@ -37,13 +119,15 @@ for m = 1:length(folders)
     files = dir([curr_folder filesep '*.dcm']);
     if isempty(files)
         % Skip this folder if it does not have dcm files
+        fprintf('..No dicoms in this folder. Skipping.\n');
         continue;
     end
     
     % Number of dicom files
     num_files = length(files);
     
-    % Get the dicom info from all files
+    % Get the dicom info from all files and put in cell.
+    %{
     all_info = {};
     for n = 1:num_files
         file = [curr_folder filesep files(n).name];
@@ -52,6 +136,21 @@ for m = 1:length(folders)
         fnames = fieldnames(curr_info);
         for p = 1:length(fnames)
             all_info(n).(fnames{p}) = curr_info.(fnames{p}); %#ok<AGROW>
+        end
+    end
+    %}
+    
+    % Get dicom info from all files. Only keeps selected fields.
+    all_info = {};
+    for n = 1:num_files
+        file = [curr_folder filesep files(n).name];
+        curr_info = dicominfo(file);
+        for p = 1:length(fnames)
+            try
+                all_info(n).(fnames{p}) = curr_info.(fnames{p}); %#ok<AGROW>
+            catch
+                all_info(n).(fnames{p}) = ''; %#ok<AGROW>
+            end
         end
     end
     
@@ -142,7 +241,7 @@ for m = 1:length(folders)
     % Each column of the similarity matrix cannot sum to be greater than 2
     check = sum( sum(sim_mat) > 2 );
     if check
-        fprintf(['Error in similarity matrix occured in ' curr_folder '!\n']);
+        fprintf(['..Error in similarity matrix occured in ' curr_folder '!\n']);
     end
     
     already_matched = [];
@@ -202,12 +301,27 @@ for m = 1:length(folders)
         end
     end
     elapsedtime = toc(looptime);
-    fprintf(['Loop time: ' num2str(elapsedtime) ' s.\n']);
+    fprintf(['..Loop time: ' num2str(elapsedtime) ' s.\n']);
 end
 
 elapsedtime = toc(maintime);
 fprintf(['Total time: ' num2str(elapsedtime) ' s.\n']);
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

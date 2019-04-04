@@ -36,7 +36,6 @@ The flow folder should contain codes and only codes.
 
 ```
 flow                        # All codes and only codes here
-│
 ├───base
 │   ├───model.py            # Base class of the model
 │   └───trainer.py          # Base class of the trainer
@@ -54,25 +53,24 @@ flow                        # All codes and only codes here
 ├───models
 │   └───neuralnet.py
 │
-├───utils
-│   ├───config.py           # Class to read json config file
-│   └───logger.py           # Python logging
-│
-│
+└───utils
+    ├───config.py           # Class to read json config file
+    └───logger.py           # Python logging
+ 
+ 
 data
-│
-├───datasetname
-│   ├───external            # Data from third party sources
-│   ├───interim             # Convenient intermediate form of the raw data
-│   ├───processed           # Data ready for training
-│   └───raw                 # Original data
-│
-├───experimentname          # Results and saved models separated from codes
-│   ├───results
-│   └───saved_models
-│
-│
+└───datasetname
+    ├───external            # Data from third party sources
+    ├───interim             # Convenient intermediate form of the raw data
+    ├───processed           # Data ready for training
+    └───raw                 # Original data
+
+
+experimentname              # Results and saved models separated from codes
+├───results
+└───saved_models
+
+
 saved_models                # Trained models that can be shared between experiments
-│
 └───trained_model.pth
 ```
