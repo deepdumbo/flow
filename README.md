@@ -35,42 +35,42 @@ class UNet(BaseModel):
 The flow folder should contain codes and only codes.
 
 ```
-flow                        # All codes and only codes here
-├───base
-│   ├───model.py            # Base class of the model
-│   └───trainer.py          # Base class of the trainer
+├───flow                        # All codes and only codes here
+│   ├───base
+│   │   ├───model.py            # Base class of the model
+│   │   └───trainer.py          # Base class of the trainer
+│   │
+│   ├───data                    # No actual data, just codes
+│   │   └───datasetname
+│   │       ├───process.py      # Process data
+│   │       └───dataset.py      # Class to read data
+│   │
+│   ├───mains                   # Create experiment folders in here
+│   │   └───experimentname
+│   │       ├───train.json      # json file should be same name as main file
+│   │       └───train.py        # Main file for training
+│   │
+│   ├───models
+│   │   └───neuralnet.py
+│   │
+│   └───utils
+│       ├───config.py           # Class to read json config file
+│       └───logger.py           # Python logging
 │
-├───data                    # No actual data, just codes
+│
+├───data
 │   └───datasetname
-│       ├───process.py      # Process data
-│       └───dataset.py      # Class to read data
+│       ├───external            # Data from third party sources
+│       ├───interim             # Convenient intermediate form of the raw data
+│       ├───processed           # Data ready for training
+│       └───raw                 # Original data
 │
-├───mains                   # Create experiment folders in here
-│   └───experimentname
-│       ├───train.json      # json file should be same name as main file
-│       └───train.py        # Main file for training
 │
-├───models
-│   └───neuralnet.py
+├───experimentname              # Results and saved models separated from codes
+│   ├───results
+│   └───saved_models
 │
-└───utils
-    ├───config.py           # Class to read json config file
-    └───logger.py           # Python logging
- 
- 
-data
-└───datasetname
-    ├───external            # Data from third party sources
-    ├───interim             # Convenient intermediate form of the raw data
-    ├───processed           # Data ready for training
-    └───raw                 # Original data
-
-
-experimentname              # Results and saved models separated from codes
-├───results
-└───saved_models
-
-
-saved_models                # Trained models that can be shared between experiments
-└───trained_model.pth
+│
+└───saved_models                # Trained models that can be shared b/w experiments
+    └───trained_model.pth
 ```
