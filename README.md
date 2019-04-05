@@ -31,7 +31,6 @@ class UNet(BaseModel):
 
 # Folder Structure
 
-**Only the flow folder is tracked by git.**
 The flow folder should contain codes and only codes.
 
 ```
@@ -73,5 +72,5 @@ flow
 │
 │
 └───saved_models                # Trained models that can be shared b/w experiments
-    └───trained_model.pth
+    └───trained_model           # Folder
 ```

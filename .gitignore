@@ -3,7 +3,7 @@ data/*/external
 data/*/interim
 data/*/processed
 data/*/raw
-saved_models
+saved_models/*/*
 *.log
 results
 *.m~
