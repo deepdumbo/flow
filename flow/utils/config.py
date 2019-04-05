@@ -1,6 +1,6 @@
-import os
-import sys
+from pathlib import Path
 import json
+import __main__
 
 
 class _NestedObject:
@@ -23,13 +23,21 @@ class Config(_NestedObject):
 
         super().__init__(config_dict)
 
-        # Set directories according to directory of execution
-        self.experiment_dir = sys.path[0].replace('\\', '/')
-        self.results_dir = f'{self.experiment_dir}/results'
-        if not os.path.isdir(self.results_dir):
-            os.makedirs(self.results_dir)
-        self.history_filename = f'{self.results_dir}/history.pickle'
-        self.save_dir = f'{self.experiment_dir}/saved_models'
-        if not os.path.isdir(self.save_dir):
-            os.makedirs(self.save_dir)
-        self.model_path = f'{self.save_dir}/{self.model_name}'
+        # Set directories according to directory of main file
+        self.main_file = Path(__main__.__file__).resolve()
+        self.flow_dir = self.main_file.parents[3]
+        self.experiment_name = self.main_file.parts[-2]
+        self.experiment_dir = self.flow_dir / self.experiment_name
+        self.results_dir = self.experiment_dir/'results'
+        print('PRINTING', self.results_dir.is_dir())
+        self.history_filename = self.results_dir/'history.pickle'
+        self.save_dir = self.experiment_dir/'saved_models'
+        print('PRINTING', self.save_dir.is_dir())
+        self.model_path = self.save_dir/self.model_name
+        if not self.results_dir.is_dir():
+            self.results_dir.mkdir(parents=True)
+        if not self.save_dir.is_dir():
+            self.save_dir.mkdir(parents=True)
+        print('PRINTING', self.history_filename)
+        print('PRINTING', self.model_path)
+        print('PRINTING', self.main_file)

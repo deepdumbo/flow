@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from flow.utils.config import Config
 from flow.utils.logger import configure_logger, log_start, log_end
 from flow.models.unet import UNet3D
-from flow.data.fetalsheepseg import FetalSheepSegDataset
+from flow.data.fetalsheepseg.fetalsheepseg import FetalSheepSegDataset
 from flow.base.trainer import BaseTrainer
 from flow.base.trainer import log_train, log_epoch, log_step, log_validate
 from flow.utils.metrics import dice_coef
@@ -151,6 +151,8 @@ if __name__ == '__main__':
     # Set options for logging
     configure_logger(args.screen, config.log_level)
 
+    """
     log_start(config)
     main(config)
     log_end()
+    """
