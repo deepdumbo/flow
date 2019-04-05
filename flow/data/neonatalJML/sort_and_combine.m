@@ -15,7 +15,7 @@ args:
     outdir: Where to save processed outputs
 %}
 
-addpath('/home/chris/flow/utils/matlab');
+addpath('/home/chris/flow/flow/utils/matlab');
 
 datadir = '/media/chris/Data/neonatalJML/raw';
 outdir = '/media/chris/Data/neonatalJML/interim';
@@ -32,7 +32,6 @@ fnames = {'StudyDate';
           'AcquisitionTime';
           'ContentTime';
           'SeriesNumber';
-          'AcquisitionNumber';
           'InstanceNumber';
           'SeriesDescription';
           'TriggerTime';
@@ -48,6 +47,7 @@ fnames = {'StudyDate';
           'RepetitionTime';
           'EchoTime';
           'NumberOfAverages';
+          'AcquisitionNumber';
           'ImagingFrequency';
           'EchoNumber';
           'MagneticFieldStrength';
@@ -182,6 +182,9 @@ for m = 1:length(folders)
         % Current set of dicom information (for the cine/stack)
         cine_info = all_info(inds);
         
+        % TriggerTime or InstanceCreationTime may be able to order the
+        % frames of the cine
+        
         % Get the trigger times so that the frames of the cine are in order
         tts = [cine_info.TriggerTime];
         
@@ -273,7 +276,10 @@ for m = 1:length(folders)
                         cine_1 = cat(3, cine_1.im);
                         cine_2 = cat(3, cine_2.im);
                         
-                        % Which one is mag, which phase?
+                        % SequenceName, SeriesDescription,
+                        % LargestImagePixelValue, RescaleIntercept,
+                        % RescaleSlope, and RescaleType may be able to
+                        % identify mag and phase
                         
                         save([outdir filesep num2str(s) '.mat'], 'cine_1');
                         s = s + 1;

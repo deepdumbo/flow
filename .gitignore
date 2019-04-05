@@ -1,8 +1,5 @@
 __pycache__
-data/*/external
-data/*/interim
-data/*/processed
-data/*/raw
+data/*/*
 saved_models/*/*
 *.log
 results
