@@ -35,6 +35,7 @@ class UNet(BaseModel):
 The flow folder should contain codes and only codes.
 
 ```
+flow
 ├───flow                        # All codes and only codes here
 │   ├───base
 │   │   ├───model.py            # Base class of the model
