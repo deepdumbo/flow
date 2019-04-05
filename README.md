@@ -1,6 +1,10 @@
 # Fetal MRI with Deep Learning
 Long description. PyTorch. Matlab.
 
+# Install
+
+Add '*yourdirectory*/flow/flow' to PYTHONPATH environment variable.
+
 # Table of Contents
 
 -  [Creating New Projects](#creating-new-projects)
