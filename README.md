@@ -3,7 +3,7 @@ Long description. PyTorch. Matlab.
 
 # Install
 
-Add '*yourdirectory*/flow/flow' to PYTHONPATH environment variable.
+Add the top-level folder to the PYTHONPATH environment variable.
 
 # Table of Contents
 
