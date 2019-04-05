@@ -1,8 +1,8 @@
 __pycache__
-data/*/external
-data/*/interim
-data/*/processed
-data/*/raw
+flow/data/*/external
+flow/data/*/interim
+flow/data/*/processed
+flow/data/*/raw
 saved_models
 *.log
 results
