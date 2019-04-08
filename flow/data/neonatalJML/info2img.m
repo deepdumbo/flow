@@ -25,8 +25,8 @@ if iscell(a)
         figure('color', 'w'); imshow3D(mag_img);
         figure('color', 'w'); imshow3D(phase_img);
         %}
-        display_stacks(mag_img);
-        display_stacks(phase_img);
+        % display_stacks(mag_img);
+        % display_stacks(phase_img);
         cine_stack = [];
         stack_info = [];
     elseif strcmp(fn{1}, 'stack')  % Otherwise should be stack of cines

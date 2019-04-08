@@ -439,10 +439,7 @@ TODO: InstanceNumber may be able to sort the frames of a cine back into the
 right order, making TriggerTime not needed.
 %}
 
-%{
-To find the cinestacks, find images where the CardiacNumberofImages is
-different than the length of the structure.
-%}
+
 
 
 
