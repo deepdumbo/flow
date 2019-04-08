@@ -4,6 +4,7 @@ Long description. PyTorch. Matlab.
 # Install
 
 Add the top-level folder to the PYTHONPATH environment variable.
+Install PyTorch (I had version 1.0.1). My Python was version 3.7.2.
 
 # Table of Contents
 
