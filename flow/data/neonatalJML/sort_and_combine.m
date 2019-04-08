@@ -9,19 +9,19 @@
 % datadir: Root folder of dicoms
 % outdir: Where to save processed outputs
 
-addpath('/home/chris/flow/flow/utils/matlab');
-% addpath('C:\Users\Chris\flow\flow\utils\matlab');
+% addpath('/home/chris/flow/flow/utils/matlab');
+addpath('C:\Users\Chris\flow\flow\utils\matlab');
 
-datadir = '/media/chris/Data/neonatalJML/raw';
-outdir = '/media/chris/Data/neonatalJML/interim_1';
-% datadir = 'C:\Users\Chris\flow\data\neonatalJML\raw';
-% outdir = 'C:\Users\Chris\flow\data\neonatalJML\interim_1';
+% datadir = '/media/chris/Data/neonatalJML/raw';
+% outdir = '/media/chris/Data/neonatalJML/interim_1';
+datadir = 'C:\Users\Chris\flow\data\neonatalJML\raw';
+outdir = 'C:\Users\Chris\flow\data\neonatalJML\interim_1';
 
 maintime = tic;
 
 % Get a cell array of all subfolders
-folders = strsplit(genpath(datadir), ':')';
-% folders = strsplit(genpath(datadir), ';')';
+% folders = strsplit(genpath(datadir), ':')';
+folders = strsplit(genpath(datadir), ';')';
 
 % Fields from dicom to keep. I've chosen fields that seem relevant and put
 % the more important ones for sorting at the beginning.
@@ -428,11 +428,6 @@ end
 
 elapsedtime = toc(maintime);
 fprintf(['Total time: ' num2str(elapsedtime) ' s.\n']);
-
-%{
-TODO: Make a function to look at images. Sort them by vessel. Will need to check that the 
-anatomy images are in order.
-%}
 
 %{
 TODO: InstanceNumber may be able to sort the frames of a cine back into the

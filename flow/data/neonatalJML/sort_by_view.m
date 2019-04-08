@@ -4,13 +4,13 @@
 % This script also fixes stacks of cines by rearranging them in the correct
 % order.
 
-addpath('/home/chris/flow/flow/utils/matlab');
-% addpath('C:\Users\Chris\flow\flow\utils\matlab');
+% addpath('/home/chris/flow/flow/utils/matlab');
+addpath('C:\Users\Chris\flow\flow\utils\matlab');
 
-in_dir = '/media/chris/Data/neonatalJML/interim_1';
-out_dir = '/media/chris/Data/neonatalJML/interim_2';
-% in_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_1';
-% out_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_2';
+% in_dir = '/media/chris/Data/neonatalJML/interim_1';
+% out_dir = '/media/chris/Data/neonatalJML/interim_2';
+in_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_1';
+out_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_2';
 
 folders = dir(in_dir);
 folders(1:2) = [];
@@ -73,7 +73,7 @@ for m = 1:length(folders)  % Loop over each study
             if isequal(cnoi, 1)  % Then this is a localizer
                 % Copy
                 copyfile(dicom_info, newfilename);
-            else  % This is a stack of cines
+            else  % This is a stack of cines (could be single slice!)
                 % Check
                 ins = [cine_info.InstanceNumber];
                 if ~isequal(max(ins), cnoi)
