@@ -36,7 +36,7 @@ if iscell(a)
             slice_info = a{n, 1};
             num_frames = length(slice_info);
             for m = 1:num_frames
-                slice(m).im = dicomread(slice_info(n).Filename); %#ok<AGROW>
+                slice(m).im = dicomread(slice_info(m).Filename); %#ok<AGROW>
             end
             stack{n, 1} = cat(3, slice.im);  % Put cine array in stack (cell)
         end
@@ -45,7 +45,7 @@ if iscell(a)
         for n = 1:num_slices
             cine_stack(:, :, :, n) = stack{n, 1};
         end
-        display_stacks(cine_stack);
+        % display_stacks(cine_stack);
         stack_info = a;
         mag_img = [];
         phase_img = [];

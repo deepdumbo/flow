@@ -1,5 +1,7 @@
 % Look at the images sorted from sort_and_combine.m
 
+addpath('/home/chris/flow/flow/utils/matlab');
+
 datadir = 'C:\Users\Chris\flow\data\neonatalJML\interim_1\study_1';
 seriesnumber = 1;
 
