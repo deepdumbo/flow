@@ -1,4 +1,4 @@
-'''Functions for calculating density compensation and trajectory for NUFFT.'''
+"""Functions for calculating density compensation and trajectory for NUFFT."""
 
 import math
 from math import pi
@@ -9,17 +9,15 @@ from pynufft import NUFFT_cpu
 
 
 def get_ramp(ns, na):
-    '''Creates the ramp filter for reconstruction of radial data.
+    """Creates the ramp filter for reconstruction of radial data.
 
-    The density compensation is just 'absolute k'.
-
-    Arguments:
+    Args:
         ns: Integer, number of k-space samples per radial profile.
         na: Integer, number of radial profiles per time frame.
 
     Returns:
         ramp: 1D numpy array of length ns*na and dtype float32.
-    '''
+    """
     # End-points
     ind1 = math.floor(ns/2)
     ind2 = math.ceil(ns/2 - 1)
@@ -39,11 +37,11 @@ def get_ramp(ns, na):
 
 
 def get_v_ramp(ns, na, angles):
-    '''Creates the ramp filter for reconstruction of radial data.
+    """Creates the ramp filter for reconstruction of radial data.
 
     Voronoi density compensation for radial. Depends on the angles provided.
 
-    Arguments:
+    Args:
         ns: Integer, number of k-space samples per radial profile.
         na: Integer, number of radial profiles per time frame.
         angles: Vector of angles, in degrees, corresponding to the angular
@@ -51,7 +49,7 @@ def get_v_ramp(ns, na, angles):
 
     Returns:
         v_ramp: 2D numpy array of shape [ns, na] and dtype float32.
-    '''
+    """
     if na < 3:
         raise Warning('Too few spokes for Voronoi correction.')
 
@@ -99,14 +97,14 @@ def get_v_ramp(ns, na, angles):
 
 
 def get_traj(ns, na, theta_init, gan=1):
-    '''Creates the coordinates for the golden-angle radial k-space trajectory.
+    """Creates the coordinates for the golden-angle radial k-space trajectory.
 
     The angle theta is measured with respect to the kx axis. The coordinates
     are normalized to range from -pi to pi, as required by PyNUFFT. The first
     vector stores the kx coordinate and the second vector stores the ky
     coordinate.
 
-    Arguments:
+    Args:
         ns: Integer, number of k-space samples per radial profile.
         na: Integer, total number of radial profiles across time.
         theta_init: Starting angular position for the trajectory, in degrees.
@@ -114,7 +112,7 @@ def get_traj(ns, na, theta_init, gan=1):
 
     Returns:
         radial_traj: 2D numpy array of shape [ns*na, 2] and dtype float32.
-    '''
+    """
     # Golden angle (S. Wundrak et al. 2016)
     tau = (np.sqrt(5) + 1) / 2
     golden_angle = 180 / (tau + gan - 1)
@@ -145,12 +143,12 @@ def get_traj(ns, na, theta_init, gan=1):
 
 
 def create_nufft_list(radial_traj, max_spokes, nx, ny, ns):
-    '''Creates a list of PyNUFFT operators.
+    """Creates a list of PyNUFFT operators.
 
     For transforming k-spaces with a large number of spokes (~2000+). Divides
     the transformation into multiple operators to prevent memory overload.
 
-    Arguments:
+    Args:
         radial_traj: The coordinates of the golden-angle radial k-space
             trajectory. Shape [ns, spokes, 2].
         max_spokes: Maximum number of spokes in an NUFFT operator.
@@ -160,7 +158,7 @@ def create_nufft_list(radial_traj, max_spokes, nx, ny, ns):
             transform for a subset of spokes. E.g. first operator is for spokes
             1-500, second operator for spokes 501-1000, etc.
         nop: Number of operators.
-    '''
+    """
     print('Creating PyNUFFT operators...', end=' ')
     spokes = radial_traj.shape[1]
     nop = math.ceil(spokes/max_spokes)  # Divide into this many operators
