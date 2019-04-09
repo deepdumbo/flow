@@ -15,7 +15,7 @@ cine_info = [imgdir filesep 'dcmsinfo.mat'];
 [mag_img, phase_img, mag_info, phase_info, cine_stack, stack_info] = info2img(cine_info);
 
 % Look at the images sorted from sort_by_view.m
-datadir = 'C:\Users\Chris\flow\data\neonatalJML\interim_2\trufi_SAG';
+datadir = '/media/chris/Data/neonatalJML/interim_2/tf2d15_2CH_IPAT';
 imgs = dir(datadir);
 imgs(1:2) = [];
 

@@ -21,12 +21,11 @@ if iscell(a)
         end
         mag_img = cat(3, mag_img.im);
         phase_img = cat(3, phase_img.im);
-        %{
+        
         figure('color', 'w'); imshow3D(mag_img);
         figure('color', 'w'); imshow3D(phase_img);
-        %}
-        display_stacks(mag_img);
-        display_stacks(phase_img);
+        % display_stacks(mag_img);
+        % display_stacks(phase_img);
         cine_stack = [];
         stack_info = [];
     elseif strcmp(fn{1}, 'stack')  % Otherwise should be stack of cines
@@ -45,7 +44,7 @@ if iscell(a)
         for n = 1:num_slices
             cine_stack(:, :, :, n) = stack{n, 1};
         end
-        display_stacks(cine_stack);
+        % display_stacks(cine_stack);
         stack_info = a;
         mag_img = [];
         phase_img = [];

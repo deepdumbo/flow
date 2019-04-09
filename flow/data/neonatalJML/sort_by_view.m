@@ -4,13 +4,13 @@
 % This script also fixes stacks of cines by rearranging them in the correct
 % order.
 
-% addpath('/home/chris/flow/flow/utils/matlab');
-addpath('C:\Users\Chris\flow\flow\utils\matlab');
+addpath('/home/chris/flow/flow/utils/matlab');
+% addpath('C:\Users\Chris\flow\flow\utils\matlab');
 
-% in_dir = '/media/chris/Data/neonatalJML/interim_1';
-% out_dir = '/media/chris/Data/neonatalJML/interim_2';
-in_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_1';
-out_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_2';
+in_dir = '/media/chris/Data/neonatalJML/interim_1';
+out_dir = '/media/chris/Data/neonatalJML/interim_2';
+% in_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_1';
+% out_dir = 'C:\Users\Chris\flow\data\neonatalJML\interim_2';
 
 folders = dir(in_dir);
 folders(1:2) = [];
