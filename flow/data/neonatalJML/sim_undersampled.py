@@ -32,7 +32,7 @@ tr = 6.5  # Repetition time
 i1 = int(176/2 - ny/2)
 i2 = i1 + ny
 # Acceleration factor
-af = 2
+af = 4
 # Heart rate (bpm)
 hr = 150
 hr = np.ones(spokes, dtype=np.float32) * hr
