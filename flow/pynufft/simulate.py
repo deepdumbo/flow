@@ -1,4 +1,4 @@
-'''Simulations for variable heart rate and data acquisition.'''
+"""Simulations for variable heart rate and data acquisition."""
 
 import math
 from math import pi
@@ -9,106 +9,7 @@ import scipy.stats as ss
 from matplotlib import pyplot as plt
 import imageio
 
-from entropy_metric import entropy, spatial_entropy, time_entropy
-from nufft_functions import get_ramp, get_traj, create_nufft_list, get_v_ramp
-
-
-def entropy_string(img):
-    a = np.float32(entropy(abs(img)))
-    b = np.float32(spatial_entropy(abs(img)))
-    c = np.float32(time_entropy(abs(img)))
-    out = '%.2f, %.2f, %.2f' % (a, b, c)
-    return out
-
-
-def myimshow(img, ax, clim, title=None, xlab=None, cmap='gray', nspoke=None):
-    ax.clear()
-    dd = ax.imshow(img, cmap=cmap, clim=clim)
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.set_xticks([])
-    ax.set_yticks([])
-    if title is not None:
-        ax.set_title(title)
-    if xlab is not None:
-        ax.set_xlabel(xlab)
-    if nspoke is not None:
-        txtstr = ('%d' % round(nspoke))
-        ax.text(0.99, 0.99, txtstr, color='w', va='top', ha='right',
-                transform=ax.transAxes)
-    return dd
-
-
-def plot_comparison(img,
-                    cine_full, cp_count_full,
-                    cine_gated, cp_count_gated,
-                    cine_gated2, cp_count_gated2,
-                    cine_us, cp_count_us,
-                    cine_us2, cp_count_us2,
-                    range_img, range_diff, fps):
-    '''Plots a comparison plot of the input images and saves a .gif.
-
-    Arguments:
-        img: First image, of shape [nx, ny, nt].
-        cine_full: Second image, same shape as img.
-        range_img: Range of the image.
-        range_diff: Range of the difference image.
-
-    Returns:
-        fig_list: List of figure frames.
-    '''
-    nx, ny, nt = img.shape
-
-    # Calculate entropy for each image and output a string
-    x_str = []
-    x_str.append(entropy_string(img))
-    x_str.append(entropy_string(cine_full))
-    x_str.append(entropy_string(cine_gated))
-    x_str.append(entropy_string(cine_gated2))
-    x_str.append(entropy_string(cine_us))
-    x_str.append(entropy_string(cine_us2))
-
-    fig_list = []
-    f = plt.figure(figsize=(20, 7))
-    ax = f.subplots(2, 6)
-    plt.subplots_adjust(left=0.01, right=0.99, bottom=0.01, top=0.95,
-                        wspace=0.01, hspace=0.1)
-
-    for i in range(nt):
-        myimshow(abs(img[:, :, i]), ax[0, 0], range_img,
-                 title='Original', xlab=x_str[0])
-        myimshow(abs(cine_full[:, :, i]), ax[0, 1], range_img,
-                 title='All Spokes', xlab=x_str[1], nspoke=cp_count_full[i])
-        myimshow(abs(cine_gated[:, :, i]), ax[0, 2], range_img,
-                 title='True HR', xlab=x_str[2], nspoke=cp_count_gated[i])
-        myimshow(abs(cine_gated2[:, :, i]), ax[0, 3], range_img,
-                 title='True HR,True KS', xlab=x_str[3],
-                 nspoke=cp_count_gated2[i])
-        myimshow(abs(cine_us[:, :, i]), ax[0, 4], range_img,
-                 title='True HR, US', xlab=x_str[4], nspoke=cp_count_us[i])
-        myimshow(abs(cine_us2[:, :, i]), ax[0, 5], range_img,
-                 title='False HR, US', xlab=x_str[5], nspoke=cp_count_us2[i])
-
-        myimshow(np.zeros((nx, ny)), ax[1, 0], range_diff)
-        d = abs(abs(img[:, :, i]) - abs(cine_full[:, :, i]))
-        myimshow(d, ax[1, 1], range_diff)
-        d = abs(abs(img[:, :, i]) - abs(cine_gated[:, :, i]))
-        myimshow(d, ax[1, 2], range_diff)
-        d = abs(abs(img[:, :, i]) - abs(cine_gated2[:, :, i]))
-        myimshow(d, ax[1, 3], range_diff)
-        d = abs(abs(img[:, :, i]) - abs(cine_us[:, :, i]))
-        myimshow(d, ax[1, 4], range_diff)
-        d = abs(abs(img[:, :, i]) - abs(cine_us2[:, :, i]))
-        myimshow(d, ax[1, 5], range_diff)
-
-        f.canvas.draw()  # Draw the canvas, cache the renderer
-        frame = np.frombuffer(f.canvas.tostring_rgb(), dtype=np.uint8)
-        frame = frame.reshape(f.canvas.get_width_height()[::-1] + (3,))
-        fig_list.append(frame)
-
-    imageio.mimwrite('./comp.gif', fig_list, fps=fps)
-    plt.close()
-    return fig_list
+from flow.pynufft.kspace import get_ramp, get_v_ramp
 
 
 def plot_hr(rr_t, t, base_rr, std, delta, hr, base_hr):
@@ -141,9 +42,9 @@ def plot_hr(rr_t, t, base_rr, std, delta, hr, base_hr):
 
 
 def gate(kspace, hr, nt, tr, method='nearest'):
-    '''Gates the radial k-space using the given heart rate.
+    """Gates the radial k-space using the given heart rate.
 
-    Arguments:
+    Args:
         kspace: Simulated k-space of shape [ns, spokes].
         hr: Vector. Given heart rate signal.
         nt: Number of cardiac phases.
@@ -156,7 +57,7 @@ def gate(kspace, hr, nt, tr, method='nearest'):
         cp_count: Vector of length nt. Number of non-zero spokes in each
             cardiac phase, which is less than or equal to the size of the
             spokes dimension.
-    '''
+    """
     ns, spokes = kspace.shape
     kspace_gated = np.zeros((ns, spokes, nt), dtype=np.complex64)
     # Counter for number of spokes gated to each cardiac phase
@@ -213,11 +114,11 @@ def gate(kspace, hr, nt, tr, method='nearest'):
 
 def recon_cine(ksf, nx, ny, nt, ns, nufft_list, max_spokes, cp_count,
                density='absk'):
-    '''Reconstructs a cine.
+    """Reconstructs a cine.
 
-    Arguments:
+    Args:
         ksf: K-space of shape [ns, spokes, nt]. This array contains allocated
-            space for all spokes for each cardiac phase. I.e. spokes is the
+            space for all spokes for each cardiac phase, i.e. spokes is the
             total number of spokes in the acquisition.
         nt: Number of cardiac phases in the image.
         ns: Number of k-space samples per radial profile.
@@ -232,7 +133,7 @@ def recon_cine(ksf, nx, ny, nt, ns, nufft_list, max_spokes, cp_count,
 
     Returns:
         cine: Reconstructed image. Shape [nx, ny, nt].
-    '''
+    """
     fs = nx*pi/2
     spokes = ksf.shape[1]
     # Create ramp filter
@@ -289,7 +190,7 @@ def recon_cine(ksf, nx, ny, nt, ns, nufft_list, max_spokes, cp_count,
 
 
 def simulate_acq(ks, hr, tr, spokes, nt, ns):
-    '''Simulates the acquisition of k-space under the given heart rate signal.
+    """Simulates the acquisition of k-space under the given heart rate signal.
 
     Interpolates the k-space in time depending on the variable heart rate.
 
@@ -301,7 +202,7 @@ def simulate_acq(ks, hr, tr, spokes, nt, ns):
 
     Returns:
         kspace: Simulated k-space.
-    '''
+    """
     # Simulate acquired k-space with variable heart rate
     kspace = np.zeros((ns, spokes), dtype=np.complex64)
     # Number of beats passed
@@ -317,24 +218,24 @@ def simulate_acq(ks, hr, tr, spokes, nt, ns):
         ind0 = math.floor(ind)  # Index of the frame before
         ind1 = ind0 + 1  # Index of the following frame
         # Linearly interpolate that spoke between two cardiac phases
-        kspace[:, a] = ((ind1-ind)*ks[:, a, ind0]
-                        + (ind-ind0)*ks[:, a, (ind1 % nt)])
+        kspace[:, a] = ((ind1-ind)*ks[:, a, ind0] +
+                        (ind-ind0)*ks[:, a, (ind1 % nt)])
     return kspace
 
 
 def calculate_full_kspace(img, nufft_list, nop, nx, ny, nt, ns, spokes):
-    '''Calculate the full k-space for each frame.
+    """Calculate the full k-space for each frame.
 
     Every spoke in the acquisition is calculated for each frame.
 
-    Arguments:
+    Args:
         img: Input image.
         nufft_list: List of planned PyNUFFT objects.
 
     Returns:
         ks: The full k-space (all spokes at every cardiac phase).
             Shape [ns, spokes, nt].
-    '''
+    """
     ks = np.zeros((ns, spokes, nt), dtype=np.complex64)
     for k in range(nt):
         ks_t = []  # List to hold the transform of each section
@@ -416,115 +317,6 @@ def simulate_rr(base_rr, std, delta, spokes, tr):
 
 
 def main():
-    # Open image
-    fn = 'D:\\Alpha\\data\\train\\cine_33.mat'
-    # fn = 'W:\\Users\\Chris\\Desktop\\Alpha\\data\\valid\\cine_20.mat'
-    # fn = 'C:\\Users\\huynh\\Desktop\\Alpha\\data\\train\\cine_104.mat'
-    img = sio.loadmat(fn)['Y']
-
-    # Crop (xy)
-    crop_length = 128
-    i1 = int(256/2 - crop_length/2)
-    i2 = i1 + crop_length
-    img = img[i1:i2, i1:i2, :]
-
-    # Downsample in the time dimension
-    nx, ny, nt = img.shape
-    xp = np.linspace(1, 20, num=20)
-    x = np.linspace(1, 20, num=15)
-    new_img = np.zeros((nx, ny, 15), dtype=np.float32)
-    for j in range(ny):
-        for i in range(nx):
-            fp = img[i, j, :]
-            new_img[i, j, :] = np.interp(x, xp, fp)
-
-    img = new_img
-
-    nx, ny, nt = img.shape
-    ns = nx*2
-    na = round(nx*pi/2)  # Number of radial profiles per time frame
-    spokes = na*nt
-
-    # Parameters for RR interval random walk (bpm or ms)
-    base_hr = np.random.normal(150, 10)
-    base_rr = 1/base_hr*60*1000
-    std = np.random.normal(7, 0.25)
-    delta = np.random.normal(0.1, 0.001)
-    tr = 5
-
-    # Distribution of base heart rates
-    def plot_gaussian(mu, sigma):
-        x = np.linspace(mu - 3*sigma, mu + 3*sigma, 100)
-        plt.plot(x, ss.norm.pdf(x, mu, sigma))
-        plt.xlabel('Heart Rates (BPM)')
-    # plot_gaussian(150, 10)
-
-    # Simulate heart beats
-    rr, rr_t, t, trigger_times = simulate_rr(base_rr, std, delta, spokes, tr)
-
-    # Convert to heart rate (bpm)
-    hr = 1/rr_t*1000*60
-
-    plot_hr(rr_t, t, base_rr, std, delta, hr, base_hr)
-
-    # Create the coordinates of the golden-angle radial k-space trajectory
-    radial_traj = get_traj(ns, spokes, theta_init=90)
-    radial_traj = np.reshape(radial_traj, (ns, spokes, 2))
-    # Create list of NUFFT operators
-    max_spokes = 500
-    nufft_list, nop = create_nufft_list(radial_traj, max_spokes, nx, ny, ns)
-
-    ks = calculate_full_kspace(img, nufft_list, nop, nx, ny, nt, ns, spokes)
-
-    # Use simulated heart rate to simulate k-space acquisition
-    kspace = simulate_acq(ks, hr, tr, spokes, nt, ns)
-
-    # Reconstruct the full k-spaces
-    cp_count_full = np.ones(nt, dtype=np.float32) * (spokes)
-    cine_full = recon_cine(ks, nx, ny, nt, ns, nufft_list, max_spokes,
-                           cp_count_full)
-    # Gate and reconstruct cine
-    kspace_gated, cp_count_gated = gate(kspace, hr, nt, tr)
-    cine_gated = recon_cine(kspace_gated, nx, ny, nt, ns, nufft_list,
-                            max_spokes, cp_count_gated)
-
-    def recon_exact_cine():
-        # Reconstruct with exact spokes (not interpolated)
-        cine_gated2 = np.zeros((nx, ny, nt), dtype=np.complex64)
-        cp_count_gated2 = np.zeros((nt), dtype=np.float32)
-        for k in range(nt):
-            # Gate
-            kspace_gated2, cp_count_d = gate(ks[:, :, k], hr, nt, tr)
-            dummy = recon_cine(kspace_gated2, nx, ny, nt, ns, nufft_list,
-                               max_spokes, cp_count_d)
-            cine_gated2[:, :, k] = dummy[:, :, k]
-            cp_count_gated2[k] = cp_count_d[k]
-        return cine_gated2, cp_count_gated2
-
-    cine_gated2, cp_count_gated2 = recon_exact_cine()
-
-    # Undersample
-    kspace_us = np.copy(kspace)
-    kspace_us[:, 600:] = 0
-    kspace_gated_us, cp_count_us = gate(kspace_us, hr, nt, tr)
-    cine_us = recon_cine(kspace_gated_us, nx, ny, nt, ns, nufft_list,
-                         max_spokes, cp_count_us)
-    # False heart rate
-    hr2 = np.copy(hr)
-    hr2[:] = np.mean(hr2)
-    kspace_gated_us2, cp_count_us2 = gate(kspace_us, hr2, nt, tr)
-    cine_us2 = recon_cine(kspace_gated_us2, nx, ny, nt, ns, nufft_list,
-                          max_spokes, cp_count_us2)
-
-    # fps = nt / np.mean(rr_t) * 1000
-    plot_comparison(img,
-                    cine_full, cp_count_full,
-                    cine_gated, cp_count_gated,
-                    cine_gated2, cp_count_gated2,
-                    cine_us, cp_count_us,
-                    cine_us2, cp_count_us2,
-                    range_img=(0, 600), range_diff=(0, 50), fps=15)
-
     return
 
 

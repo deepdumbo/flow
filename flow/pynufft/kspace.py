@@ -91,7 +91,7 @@ def get_v_ramp(ns, na, angles):
     # Normalize
     themax = math.floor(ns/2) * pi / na  # To be the same as the abs k ramp
     v_ramp = v_ramp / themax
-    # v_ramp = v_ramp / np.max(v_ramp)  # Causes blinking in time
+    # v_ramp = v_ramp / np.max(v_ramp)  # Causes blinking in time. Do not use.
     v_ramp = np.float32(v_ramp)
     return v_ramp
 
