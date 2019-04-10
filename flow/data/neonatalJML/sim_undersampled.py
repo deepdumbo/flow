@@ -8,6 +8,7 @@ simulates synthetic radial k-space, undersamples, and reconstructs
 import os
 from math import pi
 from pathlib import Path
+import time
 
 import numpy as np
 import scipy.io as sio
@@ -50,8 +51,10 @@ del files[idx]  # Not an image
 
 num_files = len(files)
 
+t0 = time.time()
 for i, file in enumerate(files):
-    print(f'..Simulating {i}/{num_files}.')
+    time0 = time.time()
+    print(f'..Simulating {i+1}/{num_files}.', end=' ')
     img = sio.loadmat(in_dir/file)['img']
     img = img[:, i1:i2, :]  # Crop
     # Calculate the full k-space
@@ -68,3 +71,6 @@ for i, file in enumerate(files):
     # Save
     savename = out_dir/file
     sio.savemat(savename, {'original': img, 'undersampled': cine})
+    print(f'Time: {time.time() - time0:.2f} s.')
+
+print(f'Total time: {time.time() - t0:.2f} s.')
