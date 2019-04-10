@@ -35,7 +35,7 @@ i2 = i1 + ny
 # Acceleration factor
 af = 4
 # Heart rate (bpm)
-hr = 150
+hr = 145
 hr = np.ones(spokes, dtype=np.float32) * hr
 
 # Create the coordinates of the golden-angle radial k-space trajectory
