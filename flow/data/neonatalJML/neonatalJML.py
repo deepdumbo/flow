@@ -18,7 +18,8 @@ class NeonatalPCDataset(Dataset):
     """Neonatal phase contrast images for image reconstruction.
 
     Args:
-        data_dir: String. Root data directory.
+        data_dir: String. Root data directory. Should contain subfolders
+            named 'train' and 'valid'.
         train: Boolean. For choosing training or validation data.
         transform: Optional transform to be applied on a sample.
     """
