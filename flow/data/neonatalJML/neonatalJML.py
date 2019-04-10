@@ -1,4 +1,7 @@
-"""Defines the fetal sheep segmentation dataset class and transforms."""
+"""Neonatal phase contrast image reconstruction dataset.
+
+Defines the class and transforms.
+"""
 
 import os
 
@@ -11,12 +14,11 @@ from torch.utils.data import Dataset
 from torchvision import transforms, utils
 
 
-class FetalSheepSegDataset(Dataset):
-    """Fetal sheep dataset for segmentation.
+class NeonatalPCDataset(Dataset):
+    """Neonatal phase contrast images for image reconstruction.
 
     Args:
-        data_dir: String. Root data directory. Should contain subfolders
-            named 'train' and 'valid'.
+        data_dir: String. Root data directory.
         train: Boolean. For choosing training or validation data.
         transform: Optional transform to be applied on a sample.
     """
