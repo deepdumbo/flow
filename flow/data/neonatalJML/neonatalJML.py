@@ -41,16 +41,16 @@ class NeonatalPCDataset(Dataset):
         Loads the i-th sample from disk. Applies transforms if any.
         """
         data = sio.loadmat(self.files[idx])
-        original = data['original']
         undersampled = data['undersampled']
-        nx, ny, nt = original.shape
-        nt = 24
+        original = data['original']
+        nx, ny, nt = undersampled.shape
+        nt = 24  # Changing from 25 to 24. Problem with convolution transpose
         in_img = np.zeros((2, nx, ny, nt), dtype=np.float32)
-        in_img[0] = original.real[:, :, 0:24]
-        in_img[1] = original.imag[:, :, 0:24]
         out_img = np.zeros((2, nx, ny, nt), dtype=np.float32)
-        out_img[0] = undersampled.real[:, :, 0:24]
-        out_img[1] = undersampled.imag[:, :, 0:24]
+        in_img[0] = undersampled.real[:, :, 0:24]
+        in_img[1] = undersampled.imag[:, :, 0:24]
+        out_img[0] = original.real[:, :, 0:24]
+        out_img[1] = original.imag[:, :, 0:24]
         sample = [in_img, out_img]
 
         if self.transform:
