@@ -5,7 +5,7 @@
 #SBATCH --mem=10000M              # memory (per node)
 #SBATCH --time=0-12:00            # time (DD-HH:MM)
 
-# graham cluster sample job script using GPU
+# graham cluster job script using GPU
 
 # For TensorFlow
 module load cuda/9.0.176 cudnn/7.0 python/3.6
