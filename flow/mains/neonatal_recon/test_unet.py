@@ -13,7 +13,7 @@ from flow.data.neonatalJML.neonatalJML import NeonatalPCDataset
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-data_dir = 'C:/Users/Chris/flow/data/neonatalJML/processed/DAO'
+data_dir = '/home/fetalmri/flow/data/neonatalJML/processed/DAO'
 
 validset = NeonatalPCDataset(data_dir, train=False)
 # Create iterable
@@ -28,7 +28,7 @@ model.to(device)
 loss_function = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
-model_path = 'C:/Users/Chris/flow/neonatal_recon/saved_models/unet.pth'
+model_path = '/home/fetalmri/flow/neonatal_recon/saved_models/unet.pth'
 model.load(model_path, optimizer, device=device)
 
 dataiter = iter(validloader)
