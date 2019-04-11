@@ -4,12 +4,11 @@
     "num_gpu": 1,
     "log_level": "INFO",
     "data_loader": {
-        "name": "FetalSheepSegDataset",
-        "data_dir": "C:/Users/Chris/flow/data/fetalsheepseg/processed",
+        "name": "NeonatalPCDataset",
+        "data_dir": "C:/Users/Chris/flow/data/neonatalJML/processed/DAO",
         "batch_size": 4,
         "shuffle": true,
-        "validation_split": 0.1,
-        "num_workers": 2
+        "num_workers": 4
     },
     "optimizer": {
         "name": "Adam",

@@ -29,15 +29,10 @@ class Config(_NestedObject):
         self.experiment_name = self.main_file.parts[-2]
         self.experiment_dir = self.flow_dir / self.experiment_name
         self.results_dir = self.experiment_dir/'results'
-        print('PRINTING', self.results_dir.is_dir())
         self.history_filename = self.results_dir/'history.pickle'
         self.save_dir = self.experiment_dir/'saved_models'
-        print('PRINTING', self.save_dir.is_dir())
         self.model_path = self.save_dir/self.model_name
         if not self.results_dir.is_dir():
             self.results_dir.mkdir(parents=True)
         if not self.save_dir.is_dir():
             self.save_dir.mkdir(parents=True)
-        print('PRINTING', self.history_filename)
-        print('PRINTING', self.model_path)
-        print('PRINTING', self.main_file)

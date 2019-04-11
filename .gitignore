@@ -1,7 +1,6 @@
 __pycache__
 data/*/*
-saved_models/*/*
-*.log
+saved_models
 results
 *.m~
 *.asv

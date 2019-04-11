@@ -6,10 +6,18 @@ from flow.base.model import BaseModel
 
 
 class UNet3D(BaseModel):
-    def __init__(self):
+    """3D U-Net.
+
+    Args:
+        in_channels: Number of channels in the input.
+        out_channels: Number of channels in the output.
+        task: One of 'regression' or 'segmentation'.
+    """
+    def __init__(self, in_channels=1, out_channels=1, task='regression'):
         super(UNet3D, self).__init__()
+        self.task = task
         # Define layers
-        self.conv1 = Conv3d(1, 64, (3, 3, 3), padding=(1, 1, 1))
+        self.conv1 = Conv3d(in_channels, 64, (3, 3, 3), padding=(1, 1, 1))
         self.conv2 = Conv3d(64, 64, (3, 3, 3), padding=(1, 1, 1))
 
         self.conv3 = Conv3d(64, 128, (3, 3, 3), padding=(1, 1, 1))
@@ -26,7 +34,7 @@ class UNet3D(BaseModel):
         self.conv11 = Conv3d(128, 64, (3, 3, 3), padding=(1, 1, 1))
         self.conv12 = Conv3d(64, 64, (3, 3, 3), padding=(1, 1, 1))
 
-        self.conv13 = Conv3d(64, 1, (1, 1, 1))
+        self.conv13 = Conv3d(64, out_channels, (1, 1, 1))
 
     def forward(self, x):
         x = relu(self.conv1(x))
@@ -52,5 +60,6 @@ class UNet3D(BaseModel):
 
         x = self.conv13(x)
 
-        x = torch.sigmoid(x)
+        if self.task == 'segmentation':
+            x = torch.sigmoid(x)
         return x

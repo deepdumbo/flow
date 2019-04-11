@@ -41,9 +41,17 @@ class NeonatalPCDataset(Dataset):
         Loads the i-th sample from disk. Applies transforms if any.
         """
         data = sio.loadmat(self.files[idx])
-        image = np.expand_dims(data['outOrig'], 0)  # Add channel axis
-        mask = np.expand_dims(data['outMask'], 0)
-        sample = [image.astype(np.float32), mask.astype(np.float32)]
+        original = data['original']
+        undersampled = data['undersampled']
+        nx, ny, nt = original.shape
+        nt = 24
+        in_img = np.zeros((2, nx, ny, nt), dtype=np.float32)
+        in_img[0] = original.real[:, :, 0:24]
+        in_img[1] = original.imag[:, :, 0:24]
+        out_img = np.zeros((2, nx, ny, nt), dtype=np.float32)
+        out_img[0] = undersampled.real[:, :, 0:24]
+        out_img[1] = undersampled.imag[:, :, 0:24]
+        sample = [in_img, out_img]
 
         if self.transform:
             sample = self.transform(sample)

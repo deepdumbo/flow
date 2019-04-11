@@ -1,10 +1,10 @@
-import os
+from pathlib import Path
 import logging
 import datetime
 import __main__
 
 
-def configure_logger(log_to_screen=False, log_level='INFO'):
+def configure_logger(config, log_to_screen=False):
     """Configures the logger.
 
     Only call this once per run because can only configure once. Call this
@@ -25,10 +25,11 @@ def configure_logger(log_to_screen=False, log_level='INFO'):
         log_file = None
     else:
         # Log file same base name as the main file
-        log_file = os.path.splitext(__main__.__file__)[0] + '.log'
+        log_file = (config.results_dir/config.main_file.name)
+        log_file = log_file.with_suffix('.log')
 
     # Set options for logging
-    logging.basicConfig(level=logleveldict[log_level],
+    logging.basicConfig(level=logleveldict[config.log_level],
                         filename=log_file,
                         filemode='a',
                         format='%(message)s')
