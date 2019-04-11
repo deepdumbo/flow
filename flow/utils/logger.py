@@ -25,7 +25,7 @@ def configure_logger(config, log_to_screen=False):
         log_file = None
     else:
         # Log file same base name as the main file
-        log_file = (config.results_dir/config.main_file.name)
+        log_file = config.results_dir / config.main_file.name
         log_file = log_file.with_suffix('.log')
 
     # Set options for logging

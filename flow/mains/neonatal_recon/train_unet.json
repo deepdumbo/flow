@@ -5,20 +5,20 @@
     "log_level": "INFO",
     "data_loader": {
         "name": "NeonatalPCDataset",
-        "data_dir": "C:/Users/Chris/flow/data/neonatalJML/processed/DAO",
+        "data_dir": "/home/fetalmri/flow/data/neonatalJML/processed/DAO",
         "batch_size": 4,
         "shuffle": true,
         "num_workers": 4
     },
     "optimizer": {
         "name": "Adam",
-        "learning_rate": 0.00005,
+        "learning_rate": 0.0001,
         "weight_decay": 0,
         "amsgrad": true
     },
     "loss_function": "MSELoss",
     "trainer": {
-        "max_epoch": 150,
+        "max_epoch": 100,
         "save_period": 1,
         "monitor": "min val_loss"
     }
