@@ -61,5 +61,5 @@ img2 = truth[2]
 
 img0 = np.sqrt(img0[0]**2 + img0[1]**2)
 
-plt.imshow(np.concatenate((out0[:, :, 20], img0[:, :, 20]), axis=1))
+plt.imshow(np.concatenate((out0[:, :, 5], img0[:, :, 5]), axis=1))
 plt.show()
