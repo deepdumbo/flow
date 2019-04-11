@@ -12,13 +12,13 @@
     },
     "optimizer": {
         "name": "Adam",
-        "learning_rate": 0.0001,
+        "learning_rate": 0.00005,
         "weight_decay": 0,
         "amsgrad": true
     },
     "loss_function": "MSELoss",
     "trainer": {
-        "max_epoch": 2,
+        "max_epoch": 150,
         "save_period": 1,
         "monitor": "min val_loss"
     }

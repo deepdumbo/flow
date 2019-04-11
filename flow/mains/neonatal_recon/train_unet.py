@@ -27,10 +27,12 @@ def plot_history(hist, config):
     ax[0].plot(range(len(hist['train_loss'])), hist['train_loss'])
     ax[0].set_xlabel('Step')
     ax[0].set_ylabel('Training Loss')
+    ax[0].set_yscale('log')
     ax[0].grid(which='both', alpha=0.25)
     ax[1].plot(range(len(hist['valid_loss'])), hist['valid_loss'])
     ax[1].set_xlabel('Epoch')
     ax[1].set_ylabel('MSE (Validation Data)')
+    ax[1].set_yscale('log')
     ax[1].grid(which='both', alpha=0.25)
     f.savefig(f'{config.results_dir}/train_history.png', dpi=200)
     ax[0].clear()
@@ -116,7 +118,8 @@ def main(config):
 
     # Create loss function and optimizer
     loss_function = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = optim.Adam(model.parameters(),
+                           lr=config.optimizer.learning_rate)
 
     # Load model
     model.load(config.model_path, optimizer, device=device)
